@@ -10,7 +10,7 @@ from src.Pacman import Pacman
 class Game:
     def __init__(self):
 
-        self._map = MapLoader('../res/Maze1.txt', '../res/Distances1.txt')
+        self._map = MapLoader('maze1.json')
 
         self.HEIGHT, self.WIDTH = self._map.get_shape()
         self.TILESIZE = 20
@@ -32,11 +32,12 @@ class Game:
 
         # Inicio
         pg.init()
+        self.myfont = pg.font.SysFont("monospace", 15)
+
+        # render text
 
     def draw(self):
 
-        # self._window.fill(self.BLACK)
-        #
         # for x in range(0, self.WIDTH, self.TILESIZE):
         #     pg.draw.line(
         #         self._window, (240, 255, 255), (x, 0), (x, self.HEIGHT)
@@ -45,6 +46,11 @@ class Game:
         #     pg.draw.line(
         #         self._window, (240, 255, 255), (0, y), (self.WIDTH, y)
         #     )
+
+        # for i in range(0, self.HEIGHT, self.TILESIZE):
+        #     for j in range(0, self.WIDTH, self.TILESIZE):
+        #         label = self.myfont.render(str(self._map.get_value((i, j))), 1, (255, 255, 0))
+        #         self._window.blit(label, (j + 5, i + 5))
 
         img = pg.image.load("../res/map/Map1.2.png")
         img = pg.transform.scale(img, (self.WIDTH, self.HEIGHT))
@@ -80,13 +86,13 @@ class Game:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
-                if pg.key.get_pressed()[pg.K_RIGHT] and self._map.is_valid(self._pacman.get_pos()):
+                if pg.key.get_pressed()[pg.K_RIGHT]:
                     self._pacman.move_right()
-                if pg.key.get_pressed()[pg.K_UP] and self._map.is_valid(self._pacman.get_pos()):
+                if pg.key.get_pressed()[pg.K_UP]:
                     self._pacman.move_up()
-                if pg.key.get_pressed()[pg.K_DOWN] and self._map.is_valid(self._pacman.get_pos()):
+                if pg.key.get_pressed()[pg.K_DOWN]:
                     self._pacman.move_down()
-                if pg.key.get_pressed()[pg.K_LEFT] and self._map.is_valid(self._pacman.get_pos()):
+                if pg.key.get_pressed()[pg.K_LEFT]:
                     self._pacman.move_left()
 
             Event(

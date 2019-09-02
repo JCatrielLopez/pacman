@@ -5,7 +5,7 @@ from src.MapLoader import MapLoader
 class Character(object):
     def __init__(self, pos_x, pos_y, resources_path=".", speed=1):
 
-        self._map = MapLoader('../res/Maze1.txt', '../res/Distances1.txt')
+        self._map = MapLoader('maze1.json')
         self.MAP_HEIGHT, self.MAP_WIDTH = self._map.get_shape()
         self.MAP_TILESIZE = 20
 
