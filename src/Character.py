@@ -5,12 +5,12 @@ from src.MapLoader import MapLoader
 class Character(object):
     def __init__(self, pos_x, pos_y, resources_path=".", speed=1):
 
-        self._map = MapLoader('maze1.json')
+        self._map = MapLoader('../res/maze1.json')
         self.MAP_HEIGHT, self.MAP_WIDTH = self._map.get_shape()
         self.MAP_TILESIZE = 20
 
-        self.XLIMIT = int(self.MAP_WIDTH / self.MAP_TILESIZE)
-        self.YLIMIT = int(self.MAP_HEIGHT / self.MAP_TILESIZE)
+        self.XLIMIT = int(self.MAP_WIDTH)
+        self.YLIMIT = int(self.MAP_HEIGHT)
 
         self.pos = [pos_x, pos_y]
 
@@ -66,9 +66,7 @@ class Character(object):
         self.current_sprite += 1
         self.current_sprite = self.current_sprite % len(self.sprites_left)
 
-        self.pos[0] += self.direction[0]
-        self.pos[1] += self.direction[1]
-        self.check_pos()
+        self.move()
 
         if self.direction == self.up:
             return self.sprites_up[out_index]
@@ -92,14 +90,25 @@ class Character(object):
         self.direction = self.right
 
     def get_pos(self):
-        return self.pos[0] * self.MAP_TILESIZE, self.pos[1] * self.MAP_TILESIZE
+        return self.pos[0], self.pos[1]
+
+    def get_grid_pos(self):
+        sprite_center = self.pos[0] + 15, self.pos[1] + 15
+        return int(sprite_center[0] / self.MAP_TILESIZE), int(sprite_center[1] / self.MAP_TILESIZE)
 
     def check_pos(self):
-        if self.pos[0] > self.XLIMIT:
+        if self.pos[0] >= self.XLIMIT:
             self.pos[0] = 0
         elif self.pos[0] < 0:
             self.pos[0] = self.XLIMIT
-        elif self.pos[1] > self.YLIMIT:
+        elif self.pos[1] >= self.YLIMIT:
             self.pos[1] = 0
         elif self.pos[1] < 0:
             self.pos[1] = self.YLIMIT
+
+    def move(self):
+        next_pos = self.pos[0] + self.direction[0], self.pos[1] + self.direction[1]
+        if self._map.is_valid(next_pos):
+            self.pos[0] = next_pos[0]
+            self.pos[1] = next_pos[1]
+            self.check_pos()
