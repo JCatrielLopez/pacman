@@ -1,23 +1,34 @@
+import json
+
 import numpy as np
 
 
 class MapLoader:
 
-    def __init__(self, map_path, dist_path):
-        self._map = np.genfromtxt(map_path, dtype=None, delimiter=1, skip_header=0)
-        # self._distances = np.genfromtxt(dist_path, dtype=None, delimiter=1, skip_header=0)
-        self._roads = {}
+    def __init__(self, input_file):
+        with open(input_file, 'r') as file:
+            f = json.load(file)
+
+        nodes = len(f["graph"])
+        self.ROWS = f['ROWS']
+        self.COLS = f['COLS']
+        self._map = np.fromstring(f["maze"], dtype=int, sep=',').reshape((31, 28), order='C')
+        self._distances = np.fromstring(f["costs-matrix"], dtype=int, sep=',').reshape((nodes, nodes), order='C')
 
     def is_valid(self, position):
-        return f"{position[0]}-{position[1]}" in self._roads.keys()
+        grid_x, grid_y = int(position[0] / 20), int(position[1] / 20)
+        return self._map[grid_x, grid_y] == 1 | self._map[grid_x, grid_y] == 2
 
     def get_distance(self, position):
         return self._distances[position[0], position[1]]
 
     def get_shape(self):
-        return self._map.shape[0]*20, self._map.shape[1]*20
+        return self.ROWS * 20, self.COLS * 20
+
+    def get_value(self, position):
+        grid_x, grid_y = int(position[0] / 20), int(position[1] / 20)
+        return self._map[grid_x, grid_y]
 
 
 if __name__ == '__main__':
-    ml = MapLoader('Maze1.txt')
-    # print(ml.is_valid((0, 0)))
+    ml = MapLoader('maze1.json')
