@@ -2,7 +2,6 @@ import pygame as pg
 
 from src.Blinky import Blinky
 from src.Bonus import Bonus
-from src.Event import Event
 from src.MapLoader import MapLoader
 from src.Pacman import Pacman
 
@@ -24,7 +23,7 @@ class Game:
 
         # Defino los jugadores
         self._pacman = Pacman(255, 460, "../res/pacman", 1)
-        self._blinky = Blinky(5, 5, "../res/ghosts", 1)
+        self._blinky = Blinky(265, 460, "../res/ghosts", 1)
         self._bonus = Bonus(80, 80, "../res/bonus", 10)
 
         # Sounds
@@ -76,12 +75,9 @@ class Game:
             self._pacman.get_pos(),
         )
 
-        pg.draw.circle(
-            self._window,
-            (255, 0, 0),
-            (self._pacman.get_pos()[0] + 15, self._pacman.get_pos()[1] + 15),
-            5,
-        )
+        # pg.draw.rect(self._window, (255, 0, 0), self._blinky.get_hitbox(), 5)
+        # pg.draw.rect(self._window, (0, 0, 255), self._pacman.get_hitbox(), 5)
+
         pg.display.update()
 
     # Main loop
@@ -103,16 +99,27 @@ class Game:
                 if pg.key.get_pressed()[pg.K_LEFT]:
                     self._pacman.move_left()
 
-            Event(
-                "pacman got a bonus",
-                self._pacman.get_pos() == self._bonus.get_pos(),
-            )
-            Event("pacman moved", self._pacman.get_pos())
+                if pg.key.get_pressed()[pg.K_m]:
+                    self.effect.play()
+                if pg.key.get_pressed()[pg.K_n]:
+                    pg.mixer.pause()
+
+            if self._pacman.hit(self._blinky.get_hitbox()):
+                print("Rip Pacman")
+                # TODO Matar al pacman.
+
+            # Event(
+            #     "pacman got a bonus",
+            #     self._pacman.get_pos() == self._bonus.get_pos(),
+            # )
+            #
+            # Event("pacman moved", self._pacman.get_pos())
+
             self._blinky.move()
 
-            self.effect.play()
-
             self.draw()
+
+            # Clock tick
             self._clock.tick(self.FPS)
 
         pg.quit()

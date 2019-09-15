@@ -41,4 +41,4 @@ class MapLoader:
 
 
 if __name__ == '__main__':
-    ml = MapLoader('maze1.json')
+    pass
