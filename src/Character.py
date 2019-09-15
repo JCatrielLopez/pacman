@@ -5,7 +5,7 @@ from src.MapLoader import MapLoader
 class Character(object):
     def __init__(self, pos_x, pos_y, resources_path=".", speed=1):
 
-        self._map = MapLoader('../res/maze1.json')
+        self._map = MapLoader('../res/map/Maze1.json')
         self.MAP_HEIGHT, self.MAP_WIDTH = self._map.get_shape()
         self.MAP_TILESIZE = 20
 
@@ -40,14 +40,14 @@ class Character(object):
         )
 
         self.sprites_left = [
-            sprite for sprite in self.sp_left.images_at(coord)
+            sprite for sprite in self.sp_left.images_at(coord, -1)
         ]
         self.sprites_right = [
-            sprite for sprite in self.sp_right.images_at(coord)
+            sprite for sprite in self.sp_right.images_at(coord, -1)
         ]
-        self.sprites_up = [sprite for sprite in self.sp_up.images_at(coord)]
+        self.sprites_up = [sprite for sprite in self.sp_up.images_at(coord, -1)]
         self.sprites_down = [
-            sprite for sprite in self.sp_down.images_at(coord)
+            sprite for sprite in self.sp_down.images_at(coord, -1)
         ]
 
         self.current_sprite = 0
@@ -108,7 +108,14 @@ class Character(object):
 
     def move(self):
         next_pos = self.pos[0] + self.direction[0], self.pos[1] + self.direction[1]
-        if self._map.is_valid(next_pos):
+        new_grid = self._map.get_grid(next_pos)
+
+        # next_grid = new_grid[0] + self.direction[0], new_grid[1] + self.direction[1]
+        #
+        # print(f"Current grid: {self._map.get_grid(self.get_pos())}")
+        # print(f"Next grid: {next_grid}")
+
+        if self._map.is_valid(new_grid):
             self.pos[0] = next_pos[0]
             self.pos[1] = next_pos[1]
             self.check_pos()

@@ -10,10 +10,10 @@ from src.Pacman import Pacman
 class Game:
     def __init__(self):
 
-        self._map = MapLoader('../res/maze1.json')
+        self._map = MapLoader('../res/map/Maze1.json')
 
         self.HEIGHT, self.WIDTH = self._map.get_shape()
-        self.TILESIZE = 20
+        self.TILESIZE = self._map.get_tilesize()
 
         self._window = pg.display.set_mode((self.WIDTH, self.HEIGHT))
         pg.display.set_caption("Pacman")
@@ -23,9 +23,13 @@ class Game:
         self.FPS = 60
 
         # Defino los jugadores
-        self._pacman = Pacman(292, 455, "../res/pacman", 1)
+        self._pacman = Pacman(255, 460, "../res/pacman", 1)
         self._blinky = Blinky(5, 5, "../res/ghosts", 1)
         self._bonus = Bonus(80, 80, "../res/bonus", 10)
+
+        # Sounds
+        pg.mixer.init()
+        self.effect = pg.mixer.Sound('../res/sounds/PacmanWakaWaka04.wav')
 
         self._bonus.observe("pacman got a bonus", self._bonus.add)
         self._blinky.observe("pacman moved", self._blinky.next_position)
@@ -42,18 +46,21 @@ class Game:
         img = pg.transform.scale(img, (self.WIDTH, self.HEIGHT))
         self._window.blit(img, (0, 0))
 
-        # for x in range(0, self.WIDTH, self.TILESIZE):
-        #     pg.draw.line(
-        #         self._window, (240, 255, 255), (x, 0), (x, self.HEIGHT)
-        #     )
-        # for y in range(0, self.HEIGHT, self.TILESIZE):
-        #     pg.draw.line(
-        #         self._window, (240, 255, 255), (0, y), (self.WIDTH, y)
-        #     )
+        for x in range(0, self.WIDTH, self.TILESIZE):
+            pg.draw.line(
+                self._window, (240, 255, 255), (x, 0), (x, self.HEIGHT)
+            )
+        for y in range(0, self.HEIGHT, self.TILESIZE):
+            pg.draw.line(
+                self._window, (240, 255, 255), (0, y), (self.WIDTH, y)
+            )
 
         # for i in range(0, self.WIDTH, self.TILESIZE):
         #     for j in range(0, self.HEIGHT, self.TILESIZE):
-        #         label = self.myfont.render(str(self._map.get_value((i, j))), 1, (255, 255, 0))
+        #         if self._map.get_value(i, j) == 0:
+        #             label = self.myfont.render(str(self._map.get_value(i, j)), 1, (255, 0, 0))
+        #         else:
+        #             label = self.myfont.render(str(self._map.get_value(i, j)), 1, (255, 255, 0))
         #         self._window.blit(label, (i + 5, j + 5))
 
         self._window.blit(
@@ -103,9 +110,7 @@ class Game:
             Event("pacman moved", self._pacman.get_pos())
             self._blinky.move()
 
-            # print(f"Pacman pos: {self._pacman.get_pos()} -> ",
-            #       f"@ {self._pacman.get_grid_pos()} [",
-            #       f"{self._map.get_value(self._pacman.get_pos())} ]")
+            self.effect.play()
 
             self.draw()
             self._clock.tick(self.FPS)
