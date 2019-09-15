@@ -1,3 +1,5 @@
+import pygame as pg
+
 import src.Spritesheet
 from src.MapLoader import MapLoader
 
@@ -13,6 +15,8 @@ class Character(object):
         self.YLIMIT = int(self.MAP_HEIGHT)
 
         self.pos = [pos_x, pos_y]
+
+        self.hitbox = pg.Rect(pos_x, pos_y, self.MAP_TILESIZE, self.MAP_TILESIZE)
 
         coord = [
             (0, 0, 16, 16),
@@ -119,3 +123,11 @@ class Character(object):
             self.pos[0] = next_pos[0]
             self.pos[1] = next_pos[1]
             self.check_pos()
+
+            self.hitbox.move_ip(self.direction[0], self.direction[1])
+
+    def get_hitbox(self):
+        return self.hitbox
+
+    def hit(self, hitbox):
+        return self.hitbox.colliderect(hitbox)
