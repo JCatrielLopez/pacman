@@ -103,18 +103,21 @@ class Character(object):
     def check_pos(self):
         if self.pos[0] >= self.XLIMIT:
             self.pos[0] = 0
-        elif self.pos[0] < 0:
+            self.hitbox.centerx = 0
+        elif self.pos[0] < -5:
             self.pos[0] = self.XLIMIT
+            self.hitbox.centerx = self.XLIMIT
         elif self.pos[1] >= self.YLIMIT:
             self.pos[1] = 0
-        elif self.pos[1] < 0:
+            self.hitbox.centery = 0
+        elif self.pos[1] < -5:
             self.pos[1] = self.YLIMIT
+            self.hitbox.centery = self.YLIMIT
 
     def move(self):
         current_pos = self.get_pos()
         next_pos = current_pos[0] + self.direction[0] * 10, current_pos[1] + self.direction[1] * 10
         new_grid = self._map.get_grid(next_pos)
-
 
         if self._map.is_valid(new_grid):
             self.pos[0] = next_pos[0]
