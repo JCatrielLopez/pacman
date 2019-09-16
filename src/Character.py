@@ -73,13 +73,13 @@ class Character(object):
         self.move()
 
         if self.direction == self.up:
-            return self.sprites_up[out_index]
+            return pg.transform.scale(self.sprites_up[out_index], (32, 32))
         if self.direction == self.down:
-            return self.sprites_down[out_index]
+            return pg.transform.scale(self.sprites_down[out_index], (32, 32))
         if self.direction == self.left:
-            return self.sprites_left[out_index]
+            return pg.transform.scale(self.sprites_left[out_index], (32, 32))
         if self.direction == self.right:
-            return self.sprites_right[out_index]
+            return pg.transform.scale(self.sprites_right[out_index], (32, 32))
 
     def move_up(self):
         self.direction = self.up
@@ -94,10 +94,10 @@ class Character(object):
         self.direction = self.right
 
     def get_pos(self):
-        return self.pos[0], self.pos[1]
+        return self.hitbox.centerx - 16, self.hitbox.centery - 16
 
     def get_grid_pos(self):
-        sprite_center = self.pos[0] + 15, self.pos[1] + 15
+        sprite_center = self.pos[0] + 10, self.pos[1] + 10
         return int(sprite_center[0] / self.MAP_TILESIZE), int(sprite_center[1] / self.MAP_TILESIZE)
 
     def check_pos(self):
@@ -111,13 +111,10 @@ class Character(object):
             self.pos[1] = self.YLIMIT
 
     def move(self):
-        next_pos = self.pos[0] + self.direction[0], self.pos[1] + self.direction[1]
+        current_pos = self.get_pos()
+        next_pos = current_pos[0] + self.direction[0] * 10, current_pos[1] + self.direction[1] * 10
         new_grid = self._map.get_grid(next_pos)
 
-        # next_grid = new_grid[0] + self.direction[0], new_grid[1] + self.direction[1]
-        #
-        # print(f"Current grid: {self._map.get_grid(self.get_pos())}")
-        # print(f"Next grid: {next_grid}")
 
         if self._map.is_valid(new_grid):
             self.pos[0] = next_pos[0]
