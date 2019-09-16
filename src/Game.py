@@ -64,19 +64,19 @@ class Game:
 
         self._window.blit(
             pg.transform.scale(self._bonus.get_sprite(), (24, 24)),
-            self._bonus.get_pos(),
+            self._bonus.get_pos()
         )
         self._window.blit(
-            pg.transform.scale(self._blinky.get_sprite(), (32, 32)),
-            self._blinky.get_pos(),
+            self._blinky.get_sprite(),
+            self._blinky.get_pos()
         )
         self._window.blit(
-            pg.transform.scale(self._pacman.get_sprite(), (32, 32)),
-            self._pacman.get_pos(),
+            self._pacman.get_sprite(),
+            self._pacman.get_pos()
         )
 
         # pg.draw.rect(self._window, (255, 0, 0), self._blinky.get_hitbox(), 5)
-        # pg.draw.rect(self._window, (0, 0, 255), self._pacman.get_hitbox(), 5)
+        pg.draw.rect(self._window, (0, 0, 255), self._pacman.get_hitbox(), 2)
 
         pg.display.update()
 
