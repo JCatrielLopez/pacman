@@ -114,6 +114,17 @@ class Character(object):
             self.pos[1] = self.YLIMIT
             self.hitbox.centery = self.YLIMIT
 
+    def adjust_pos_vertical(self): #todo revisar!!!
+        if self.direction == self.left or self.direction == self.right:  # horizontal movement
+            tile_pos = self.get_pos()[1]
+            tile_pos = int(tile_pos / 16)
+            lim_sup = tile_pos * 16
+            lim_int = (tile_pos + 1) * 16
+            new_pos = int((lim_sup + lim_int) / 2)
+            print("new_pos",new_pos)
+            self.hitbox.centery = new_pos
+            print("hitbox adjusted in Y!")
+
     def move(self):
         current_pos = self.get_pos()
         next_pos = current_pos[0] + self.direction[0] * 10, current_pos[1] + self.direction[1] * 10
@@ -125,6 +136,7 @@ class Character(object):
             self.check_pos()
 
             self.hitbox.move_ip(self.direction[0], self.direction[1])
+            # self.adjust_pos_vertical()
 
     def get_hitbox(self):
         return self.hitbox

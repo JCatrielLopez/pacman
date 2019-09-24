@@ -88,7 +88,7 @@ class Game:
         )
 
         # pg.draw.rect(self._window, (255, 0, 0), self._blinky.get_hitbox(), 5)
-        pg.draw.rect(self.window, (0, 0, 255), self.pacman.get_hitbox(), 2)
+        # pg.draw.rect(self.window, (0, 0, 255), self.pacman.get_hitbox(), 2)
 
         pg.display.update()
 
