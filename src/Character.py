@@ -1,14 +1,14 @@
 import pygame as pg
 
 import src.Spritesheet
-from src.MapLoader import MapLoader
+from src.Map import Map
 
 
 class Character(object):
     def __init__(self, pos_x, pos_y, resources_path=".", speed=1):
 
-        self._map = MapLoader('../res/map/Maze1.json')
-        self.MAP_HEIGHT, self.MAP_WIDTH = self._map.get_shape()
+        self.map = Map('../res/map/map1.json')
+        self.MAP_HEIGHT, self.MAP_WIDTH = self.map.get_shape()
         self.MAP_TILESIZE = 20
 
         self.XLIMIT = int(self.MAP_WIDTH)
@@ -30,16 +30,16 @@ class Character(object):
             (128, 0, 16, 16),
         ]
 
-        self.sp_left = src.Spritesheet.spritesheet(
+        self.sp_left = src.Spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_left.png"
         )
-        self.sp_right = src.Spritesheet.spritesheet(
+        self.sp_right = src.Spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_right.png"
         )
-        self.sp_up = src.Spritesheet.spritesheet(
+        self.sp_up = src.Spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_up.png"
         )
-        self.sp_down = src.Spritesheet.spritesheet(
+        self.sp_down = src.Spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_down.png"
         )
 
@@ -114,7 +114,7 @@ class Character(object):
             self.pos[1] = self.YLIMIT
             self.hitbox.centery = self.YLIMIT
 
-    def adjust_pos_vertical(self): #todo revisar!!!
+    def adjust_pos_vertical(self):
         if self.direction == self.left or self.direction == self.right:  # horizontal movement
             tile_pos = self.get_pos()[1]
             tile_pos = int(tile_pos / 16)
@@ -128,9 +128,9 @@ class Character(object):
     def move(self):
         current_pos = self.get_pos()
         next_pos = current_pos[0] + self.direction[0] * 10, current_pos[1] + self.direction[1] * 10
-        new_grid = self._map.get_grid(next_pos)
+        new_grid = self.map.get_grid(next_pos)
 
-        if self._map.is_valid(new_grid):
+        if self.map.is_valid(new_grid):
             self.pos[0] = next_pos[0]
             self.pos[1] = next_pos[1]
             self.check_pos()

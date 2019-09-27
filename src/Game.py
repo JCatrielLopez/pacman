@@ -1,143 +1,89 @@
 import pygame as pg
-
-from src.Blinky import Blinky
-from src.Bonus import Bonus
-from src.MapLoader import MapLoader
+from src.Map import Map
 from src.Pacman import Pacman
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+PURPLE = (255, 0, 255)
+YELLOW = (255, 255, 0)
+
+
+class Wall(pg.sprite.Sprite):
+
+    def __init__(self, x, y, width, height, color=WHITE):
+        super().__init__()
+
+        self.image = pg.Surface([width, height])
+        self.image.fill(color)
+
+        # Make our top-left corner the passed-in location.
+        self.rect = self.image.get_rect()
+        self.rect.y = y
+        self.rect.x = x
 
 
 class Game:
     def __init__(self):
 
-        self.map = MapLoader('../res/map/Maze1.json')
+        self.map_number = 1
+        self.bg_image = pg.image.load(f"../res/map/map{self.map_number}.png")
+        self.map = Map(f"../res/map/map{self.map_number}.json")
+        self.height, self.width = self.map.get_shape()
+        self.tilesize = self.map.get_tilesize()
+        self.sprites_hidden = False
 
-        self.HEIGHT, self.WIDTH = self.map.get_shape()
-        self.TILESIZE = self.map.get_tilesize()
-
-        self.window = pg.display.set_mode((self.WIDTH, self.HEIGHT))
+        self.window = pg.display.set_mode((self.width, self.height))
         pg.display.set_caption("Pacman")
-
-        # Variables del juego
         self.clock = pg.time.Clock()
         self.FPS = 60
-        self.dots = [-1] * 868
-
-        # Defino los jugadores
-        self.pacman = Pacman(255, 460, "../res/pacman", 1)
-        self.blinky = Blinky(265, 460, "../res/ghosts", 1)
-        self.bonus = Bonus(80, 80, "../res/bonus", 10)
-
-        # Sounds
-        pg.mixer.init()
-        self.effect = pg.mixer.Sound('../res/sounds/PacmanWakaWaka04.wav')
-
-        self.bonus.observe("pacman got a bonus", self.bonus.add)
-        self.blinky.observe("pacman moved", self.blinky.next_position)
-
-        for i in range(0, self.WIDTH, self.TILESIZE):
-            for j in range(0, self.HEIGHT, self.TILESIZE):
-                x, y = self.map.get_grid((i, j))
-                value = self.map.get_value(x, y)
-                if value == 1:
-                    self.add_dot((x, y), 10)
-                elif value == 3:
-                    self.add_dot((x, y), 30)
-        # Inicio
         pg.init()
 
-    def add_dot(self, pos, score):
-        self.dots[pos[0] * 31 + pos[1]] = score
+        self.wall_list = pg.sprite.Group()
+        for i in range(0, self.map.get_cols()):
+            for j in range(0, self.map.get_rows()):
+                value = self.map.get_value(i, j)
+                if value == 0 or value == 4:
+                    wall = Wall(i * self.tilesize, j * self.tilesize, self.tilesize, self.tilesize, BLUE)
+                    self.wall_list.add(wall)
 
-    def get_dot(self, pos):
-        try:
-            return self.dots[pos[0] * 31 + pos[1]]
-        except IndexError:
-            return -1
+        # todo use speeds like 2,4,8,16
+        self.pacman = Pacman(216, 272, self.map, self.wall_list, 2)
+        self.movingsprites = pg.sprite.Group()
+        self.movingsprites.add(self.pacman)
 
     def draw(self):
-
-        img = pg.image.load("../res/map/Map1.2.png")
-        img = pg.transform.scale(img, (self.WIDTH, self.HEIGHT))
-        self.window.blit(img, (0, 0))
-
-        for x in range(0, self.WIDTH, self.TILESIZE):
-            pg.draw.line(
-                self.window, (240, 255, 255), (x, 0), (x, self.HEIGHT)
-            )
-        for y in range(0, self.HEIGHT, self.TILESIZE):
-            pg.draw.line(
-                self.window, (240, 255, 255), (0, y), (self.WIDTH, y)
-            )
-
-        for i in range(0, self.WIDTH, self.TILESIZE):
-            for j in range(0, self.HEIGHT, self.TILESIZE):
-                x, y = self.map.get_grid((i, j))
-                value = self.get_dot((x, y))
-                if value == 10:
-                    pg.draw.circle(self.window, (255, 255, 0), (i + 10, j + 10), 3)
-                elif value == 30:
-                    pg.draw.circle(self.window, (255, 255, 0), (i + 10, j + 10), 6)
-
-        self.window.blit(
-            self.blinky.get_sprite(),
-            self.blinky.get_pos()
-        )
-        self.window.blit(
-            self.pacman.get_sprite(),
-            self.pacman.get_pos()
-        )
-
-        # pg.draw.rect(self._window, (255, 0, 0), self._blinky.get_hitbox(), 5)
-        # pg.draw.rect(self.window, (0, 0, 255), self.pacman.get_hitbox(), 2)
-
+        self.window.fill(BLACK)
+        self.wall_list.draw(self.window)
+        self.movingsprites.draw(self.window)
+        if not self.sprites_hidden:
+            self.window.blit(self.bg_image, (0, 0))
+            self.window.blit(self.pacman.get_sprite(), self.pacman.get_pos())
         pg.display.update()
 
     # Main loop
     def run(self):
         running = True
 
-        self.pacman.move()
-
-        score = 0
-
         while running:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
-                if pg.key.get_pressed()[pg.K_RIGHT]:
-                    self.pacman.move_right()
+
                 if pg.key.get_pressed()[pg.K_UP]:
                     self.pacman.move_up()
                 if pg.key.get_pressed()[pg.K_DOWN]:
                     self.pacman.move_down()
                 if pg.key.get_pressed()[pg.K_LEFT]:
                     self.pacman.move_left()
+                if pg.key.get_pressed()[pg.K_RIGHT]:
+                    self.pacman.move_right()
+                if pg.key.get_pressed()[pg.K_h]:
+                    self.sprites_hidden = not self.sprites_hidden
 
-                if pg.key.get_pressed()[pg.K_m]:
-                    self.effect.play()
-                if pg.key.get_pressed()[pg.K_n]:
-                    pg.mixer.pause()
-
-            if self.pacman.hit(self.blinky.get_hitbox()):
-                print("Rip Pacman")
-                # TODO Matar al pacman.
-
-            grid_score = self.get_dot(self.pacman.get_grid_pos())
-
-            if grid_score != -1:
-                score += grid_score
-                print(f"Score: {score}")
-                self.add_dot(self.pacman.get_grid_pos(), -1)
-
-            # Event(
-            #     "pacman got a bonus",
-            #     self._pacman.get_pos() == self._bonus.get_pos(),
-            # )
-            #
-            # Event("pacman moved", self._pacman.get_pos())
-
-            self.blinky.move()
-
+            self.pacman.move()
             self.draw()
 
             # Clock tick

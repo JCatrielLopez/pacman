@@ -8,7 +8,7 @@ class Bonus(Observer):
         self._value = value
 
         Observer.__init__(self)
-        self.sp = src.Spritesheet.spritesheet(f"{resources_path}/fruit 1.gif")
+        self.sp = src.Spritesheet.Spritesheet(f"{resources_path}/fruit 1.gif")
 
     def add(self, condition):
         if condition:
