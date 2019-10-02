@@ -1,19 +1,14 @@
 import pygame as pg
+
+from src import Colors
+from src.Blinky import Blinky
 from src.Map import Map
 from src.Pacman import Pacman
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-PURPLE = (255, 0, 255)
-YELLOW = (255, 255, 0)
 
 
 class Wall(pg.sprite.Sprite):
 
-    def __init__(self, x, y, width, height, color=WHITE):
+    def __init__(self, x, y, width, height, color=Colors.WHITE):
         super().__init__()
 
         self.image = pg.Surface([width, height])
@@ -28,7 +23,7 @@ class Wall(pg.sprite.Sprite):
 class Game:
     def __init__(self):
 
-        self.map_number = 1
+        self.map_number = 2
         self.bg_image = pg.image.load(f"../res/map/map{self.map_number}.png")
         self.map = Map(f"../res/map/map{self.map_number}.json")
         self.height, self.width = self.map.get_shape()
@@ -46,21 +41,25 @@ class Game:
             for j in range(0, self.map.get_rows()):
                 value = self.map.get_value(i, j)
                 if value == 0 or value == 4:
-                    wall = Wall(i * self.tilesize, j * self.tilesize, self.tilesize, self.tilesize, BLUE)
+                    wall = Wall(i * self.tilesize, j * self.tilesize, self.tilesize, self.tilesize, Colors.GRAY)
                     self.wall_list.add(wall)
 
         # todo use speeds like 2,4,8,16
+        self.blinky = Blinky(216, 176, self.map, self.wall_list, 2)
         self.pacman = Pacman(216, 272, self.map, self.wall_list, 2)
+        self.pacman.add_ghost(self.blinky)
         self.movingsprites = pg.sprite.Group()
         self.movingsprites.add(self.pacman)
+        self.movingsprites.add(self.blinky)
 
     def draw(self):
-        self.window.fill(BLACK)
+        self.window.fill(Colors.BLACK)
         self.wall_list.draw(self.window)
         self.movingsprites.draw(self.window)
         if not self.sprites_hidden:
             self.window.blit(self.bg_image, (0, 0))
-            self.window.blit(self.pacman.get_sprite(), self.pacman.get_pos())
+            self.window.blit(self.pacman.get_sprite(), self.pacman.get_sprite_pos())
+            self.window.blit(self.blinky.get_sprite(), self.blinky.get_sprite_pos())
         pg.display.update()
 
     # Main loop
@@ -84,6 +83,7 @@ class Game:
                     self.sprites_hidden = not self.sprites_hidden
 
             self.pacman.move()
+            self.blinky.move()
             self.draw()
 
             # Clock tick

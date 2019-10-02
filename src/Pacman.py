@@ -1,19 +1,12 @@
 import pygame as pg
-from collections import deque
-import src.Spritesheet
 
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-PURPLE = (255, 0, 255)
-YELLOW = (255, 255, 0)
+import src.Spritesheet
+from src import Colors
 
 
 class Pacman(pg.sprite.Sprite):
 
-    def __init__(self, x, y, map, walls, speed=1):
+    def __init__(self, x, y, map, walls, speed=2):
         super().__init__()
 
         self.map = map
@@ -30,7 +23,7 @@ class Pacman(pg.sprite.Sprite):
         self.next_dir = None
 
         self.image = pg.Surface([map.get_tilesize(), map.get_tilesize()])
-        self.image.fill(YELLOW)
+        self.image.fill(Colors.YELLOW)
 
         # Make our top-left corner the passed-in location.
         self.rect = self.image.get_rect()
@@ -38,35 +31,25 @@ class Pacman(pg.sprite.Sprite):
         self.rect.x = x
 
         coord = []
-        for i in range(9):
+        for i in range(8):
             coord.append((i * map.get_tilesize() * 2, 0, map.get_tilesize() * 2, map.get_tilesize() * 2))
 
         resources_path = "../res/pacman"
-        self.sp_left = src.Spritesheet.Spritesheet(
-            f"{resources_path}/spritesheet_left.png"
-        )
-        self.sp_right = src.Spritesheet.Spritesheet(
-            f"{resources_path}/spritesheet_right.png"
-        )
-        self.sp_up = src.Spritesheet.Spritesheet(
-            f"{resources_path}/spritesheet_up.png"
-        )
-        self.sp_down = src.Spritesheet.Spritesheet(
-            f"{resources_path}/spritesheet_down.png"
-        )
+        sp_left = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_left.png")
+        sp_right = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_right.png")
+        sp_up = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_up.png")
+        sp_down = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_down.png")
 
-        self.sprites_left = [
-            sprite for sprite in self.sp_left.images_at(coord, -1)
-        ]
-        self.sprites_right = [
-            sprite for sprite in self.sp_right.images_at(coord, -1)
-        ]
-        self.sprites_up = [sprite for sprite in self.sp_up.images_at(coord, -1)]
-        self.sprites_down = [
-            sprite for sprite in self.sp_down.images_at(coord, -1)
-        ]
-
+        self.sprites_left = [sprite for sprite in sp_left.images_at(coord, -1)]
+        self.sprites_right = [sprite for sprite in sp_right.images_at(coord, -1)]
+        self.sprites_up = [sprite for sprite in sp_up.images_at(coord, -1)]
+        self.sprites_down = [sprite for sprite in sp_down.images_at(coord, -1)]
         self.current_sprite = 0
+
+        self.ghosts = []
+
+    def add_ghost(self, ghost):
+        self.ghosts.append(ghost)
 
     def adjust_movement(self):
         # todo delete this comment in the future if is not necessary
@@ -96,7 +79,7 @@ class Pacman(pg.sprite.Sprite):
                 else:
                     self.rect.top = block.rect.bottom
 
-    def get_pos(self):
+    def get_sprite_pos(self):
         return self.rect.centerx - self.map.get_tilesize(), self.rect.centery - self.map.get_tilesize()
 
     def get_sprite(self):
@@ -104,6 +87,7 @@ class Pacman(pg.sprite.Sprite):
         self.current_sprite += 1
         self.current_sprite = self.current_sprite % len(self.sprites_left)
 
+        out_sprite = None
         if self.direction == self.up:
             out_sprite = self.sprites_up[out_index]
         if self.direction == self.down:
@@ -139,9 +123,13 @@ class Pacman(pg.sprite.Sprite):
                     self.next_dir = None
 
         self.rect.x += self.direction[0]
-        if 0 < self.rect.x < cols*tilesize:  # The pacman could be passing through a tunnel
+        if 0 < self.rect.x < cols * tilesize:  # The pacman could be passing through a tunnel
             self.rect.y += self.direction[1]
         self.adjust_movement()
+
+        ghosts_hit_list = pg.sprite.spritecollide(self, self.ghosts, False)
+        for ghost in ghosts_hit_list:
+            print("Hit", ghost.name, "at:", ghost.rect.x, ",", ghost.rect.y)
 
         self.check_limits()
 
