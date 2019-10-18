@@ -46,6 +46,12 @@ class Pellet(pg.sprite.Sprite):
     def get_sprite_pos(self):
         return self.rect.x, self.rect.y
 
+    def score(self):
+        if self.is_energizer:
+            return 50
+        else:
+            return 10
+
 
 class Game:
     def __init__(self):
@@ -57,14 +63,14 @@ class Game:
         self.tilesize = self.map.get_tilesize()
         self.sprites_hidden = False
 
-
         self.window = pg.display.set_mode((self.width, self.height))
         pg.display.set_caption("Pacman")
         self.clock = pg.time.Clock()
         self.FPS = 60
+        self.score = 0
         pg.init()
 
-        sp_pellets = Spritesheet.Spritesheet("../res/map/dots.png")
+        sp_pellets = Spritesheet.Spritesheet("../res/map/Dots.png")
         coord = []
         for i in range(5):
             coord.append((0, i * self.map.get_tilesize(), self.map.get_tilesize(), self.map.get_tilesize()))
@@ -73,11 +79,10 @@ class Game:
 
         sprites_pellets = [sprite for sprite in sp_pellets.images_at(coord, -1)]
 
-
         self.wall_group = pg.sprite.Group()
         self.pellet_group = pg.sprite.Group()
 
-        pellet_pos = (self.map_number-1) * 2
+        pellet_pos = (self.map_number - 1) * 2
         energizer_pellet_pos = pellet_pos + 1
         for i in range(0, self.map.get_cols()):
             for j in range(0, self.map.get_rows()):
@@ -87,10 +92,9 @@ class Game:
                     self.wall_group.add(wall)
 
                 if value == 1 or value == 3:
-                    is_energizer = True
-                    if value == 1:
-                        is_energizer = False
-                    pellet = Pellet(i * self.tilesize, j * self.tilesize, self.tilesize, is_energizer, [sprites_pellets[pellet_pos],sprites_pellets[energizer_pellet_pos]])
+                    is_energizer = value != 1
+                    pellet = Pellet(i * self.tilesize, j * self.tilesize, self.tilesize, is_energizer,
+                                    [sprites_pellets[pellet_pos], sprites_pellets[energizer_pellet_pos]])
                     self.pellet_group.add(pellet)
 
         # todo use speeds like 2,4,8,16
@@ -100,7 +104,6 @@ class Game:
         self.moving_sprites = pg.sprite.Group()
         self.moving_sprites.add(self.pacman)
         self.moving_sprites.add(self.blinky)
-
 
     def draw(self):
         self.window.fill(Colors.BLACK)
@@ -114,13 +117,11 @@ class Game:
             self.window.blit(self.pacman.get_sprite(), self.pacman.get_sprite_pos())
             self.window.blit(self.blinky.get_sprite(), self.blinky.get_sprite_pos())
 
-
         pg.display.update()
 
     # Main loop
     def run(self):
         running = True
-
         while running:
             for event in pg.event.get():
                 if event.type == pg.QUIT or pg.key.get_pressed()[pg.K_ESCAPE]:
@@ -138,8 +139,21 @@ class Game:
                 if pg.key.get_pressed()[pg.K_h]:
                     self.sprites_hidden = not self.sprites_hidden
 
+            # Pellets
+            rect = pg.Rect((self.pacman.rect.x, self.pacman.rect.y), (self.map.get_tilesize(), self.map.get_tilesize()))
+            # pg.draw.rect(self.window, (255, 0, 0), rect, 3)
+            # pg.display.update()
+            colliding_idx = rect.collidelistall(self.pellet_group.sprites())
+            colliding = [self.pellet_group.sprites()[i] for i in colliding_idx]
+
+            if len(colliding) != 0:
+                self.pellet_group.remove(colliding[0])
+                self.score += colliding[0].score()
+                print(f"SCORE: {self.score}")
+
+
             self.pacman.move()
-            self.blinky.move()
+            # self.blinky.move()
             self.draw()
 
             # Clock tick
