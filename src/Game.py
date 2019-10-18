@@ -4,6 +4,7 @@ from src import Colors, Spritesheet
 from src.Blinky import Blinky
 from src.Map import Map
 from src.Pacman import Pacman
+from src.Pellet import Pellet
 
 
 class Wall(pg.sprite.Sprite):
@@ -20,39 +21,6 @@ class Wall(pg.sprite.Sprite):
         self.rect.y = y
 
 
-class Pellet(pg.sprite.Sprite):
-
-    def __init__(self, x, y, tilesize, is_energizer, sprites):
-        super().__init__()
-
-        self.tilesize = tilesize
-        self.is_energizer = is_energizer
-        self.sprites = sprites
-        self.image = pg.Surface([tilesize, tilesize])
-        if is_energizer:
-            self.image.fill(Colors.WHITE)
-        else:
-            self.image.fill(Colors.LIGHT_GRAY)
-
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-    def get_sprite(self):
-        if self.is_energizer:
-            return self.sprites[0]
-        return self.sprites[1]
-
-    def get_sprite_pos(self):
-        return self.rect.x, self.rect.y
-
-    def score(self):
-        if self.is_energizer:
-            return 50
-        else:
-            return 10
-
-
 class Game:
     def __init__(self):
 
@@ -62,12 +30,17 @@ class Game:
         self.height, self.width = self.map.get_shape()
         self.tilesize = self.map.get_tilesize()
         self.sprites_hidden = False
-
-        self.window = pg.display.set_mode((self.width, self.height))
+        margin_bottom = 50
+        self.window = pg.display.set_mode((self.width, self.height + margin_bottom))
         pg.display.set_caption("Pacman")
         self.clock = pg.time.Clock()
         self.FPS = 60
         self.score = 0
+
+        pg.font.init()
+        self.font = pg.font.SysFont('Comic Sans MS', 25, bold=True)
+        self.text_highscore = self.font.render("HIGH SCORE: 0", False, (255, 255, 255))
+
         pg.init()
 
         sp_pellets = Spritesheet.Spritesheet("../res/map/Dots.png")
@@ -116,7 +89,7 @@ class Game:
                 self.window.blit(pellet.get_sprite(), pellet.get_sprite_pos())
             self.window.blit(self.pacman.get_sprite(), self.pacman.get_sprite_pos())
             self.window.blit(self.blinky.get_sprite(), self.blinky.get_sprite_pos())
-
+        self.window.blit(self.text_highscore, (5, 510))
         pg.display.update()
 
     # Main loop
@@ -140,16 +113,17 @@ class Game:
                     self.sprites_hidden = not self.sprites_hidden
 
             # Pellets
-            rect = pg.Rect((self.pacman.rect.x, self.pacman.rect.y), (self.map.get_tilesize(), self.map.get_tilesize()))
-            # pg.draw.rect(self.window, (255, 0, 0), rect, 3)
+            # rect = pg.Rect((self.pacman.rect.x, self.pacman.rect.y), (self.map.get_tilesize(), self.map.get_tilesize()))
+            # pg.draw.rect(self.window, (255, 0, 0), self.pacman.rect, 3)
             # pg.display.update()
-            colliding_idx = rect.collidelistall(self.pellet_group.sprites())
+            colliding_idx = self.pacman.rect.collidelistall(self.pellet_group.sprites())
             colliding = [self.pellet_group.sprites()[i] for i in colliding_idx]
 
+            # TODO Separar SCORE de HIGH SCORE
             if len(colliding) != 0:
                 self.pellet_group.remove(colliding[0])
                 self.score += colliding[0].score()
-                print(f"SCORE: {self.score}")
+                self.text_highscore = self.font.render(f"HIGH SCORE: {self.score}", False, (255, 255, 255))
 
 
             self.pacman.move()

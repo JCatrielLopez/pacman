@@ -19,7 +19,7 @@ class Blinky(pg.sprite.Sprite):
         self.right = [self.speed, 0]
         self.stop = [0, 0]
 
-        self.direction = self.stop
+        self.direction = self.right
         self.next_dir = None
 
         self.image = pg.Surface([map.get_tilesize(), map.get_tilesize()])
@@ -104,19 +104,20 @@ class Blinky(pg.sprite.Sprite):
         if self.rect.x == (cols + 1) * tilesize:
             self.rect.x = -tilesize
 
-    def move(self):
+    def move(self, target):
         tilesize = self.map.get_tilesize()
         cols = self.map.get_cols()
-        # if "in tile"
-        if self.rect.x % tilesize == 0 and self.rect.y % tilesize == 0:
-            if self.next_dir is not None:
-                j = int(self.rect.x / tilesize)
-                i = int(self.rect.y / tilesize)
-                j += int(self.next_dir[0] / self.speed)
-                i += int(self.next_dir[1] / self.speed)
-                if self.map.is_valid([j, i]):
-                    self.direction = self.next_dir
-                    self.next_dir = None
+
+        self.direction = self.get_dir(target)
+
+        if self.rect.x % tilesize == 0 and self.rect.y % tilesize == 0 and self.next_dir is not None:
+            j = int(self.rect.x / tilesize)
+            i = int(self.rect.y / tilesize)
+            j += int(self.next_dir[0] / self.speed)
+            i += int(self.next_dir[1] / self.speed)
+            if self.map.is_valid([j, i]):
+                self.direction = self.next_dir
+                self.next_dir = None
 
         self.rect.x += self.direction[0]
         if 0 < self.rect.x < cols * tilesize:  # The pacman could be passing through a tunnel
