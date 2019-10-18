@@ -24,22 +24,20 @@ class Wall(pg.sprite.Sprite):
 class Game:
     def __init__(self):
 
-        self.map_number = 1
+        self.map_number = 5
         self.bg_image = pg.image.load(f"../res/map/map{self.map_number}.png")
         self.map = Map(f"../res/map/map{self.map_number}.json")
         self.height, self.width = self.map.get_shape()
+        margin_bottom = 50
+        self.height += margin_bottom
         self.tilesize = self.map.get_tilesize()
         self.sprites_hidden = False
-        margin_bottom = 50
-        self.window = pg.display.set_mode((self.width, self.height + margin_bottom))
+
+        self.window = pg.display.set_mode((self.width, self.height))
         pg.display.set_caption("Pacman")
         self.clock = pg.time.Clock()
         self.FPS = 60
         self.score = 0
-
-        pg.font.init()
-        self.font = pg.font.SysFont('Comic Sans MS', 25, bold=True)
-        self.text_highscore = self.font.render("HIGH SCORE: 0", False, (255, 255, 255))
 
         pg.init()
 
@@ -78,6 +76,30 @@ class Game:
         self.moving_sprites.add(self.pacman)
         self.moving_sprites.add(self.blinky)
 
+        # On screen text
+        pg.font.init()
+        self.font = pg.font.SysFont('default', 25, bold=True)
+        self.text_highscore = self.font.render("HIGH SCORE: 0", False, Colors.WHITE)
+        self.text_lives = self.font.render(f"{self.pacman.get_lives()}UP", False, Colors.WHITE)
+
+    def toggle_fullscreen(self):
+        screen = pg.display.get_surface()
+        tmp = screen.convert()
+        caption = pg.display.get_caption()
+        flags = screen.get_flags()
+        bits = screen.get_bitsize()
+
+        pg.display.quit()
+        pg.display.init()
+
+        screen = pg.display.set_mode((self.width, self.height), flags + pg.FULLSCREEN, bits)
+        screen.blit(tmp, (0, 0))
+        pg.display.set_caption(*caption)
+
+        pg.key.set_mods(0)
+
+        return screen
+
     def draw(self):
         self.window.fill(Colors.BLACK)
         self.wall_group.draw(self.window)
@@ -89,7 +111,8 @@ class Game:
                 self.window.blit(pellet.get_sprite(), pellet.get_sprite_pos())
             self.window.blit(self.pacman.get_sprite(), self.pacman.get_sprite_pos())
             self.window.blit(self.blinky.get_sprite(), self.blinky.get_sprite_pos())
-        self.window.blit(self.text_highscore, (5, 510))
+        self.window.blit(self.text_highscore, (75, 510))
+        self.window.blit(self.text_lives, (self.width - 150, 510))
         pg.display.update()
 
     # Main loop
@@ -100,6 +123,8 @@ class Game:
                 if event.type == pg.QUIT or pg.key.get_pressed()[pg.K_ESCAPE]:
                     running = False
 
+                if pg.key.get_pressed()[pg.K_f]:
+                    self.window = self.toggle_fullscreen()
                 if pg.key.get_pressed()[pg.K_UP]:
                     self.pacman.move_up()
                 if pg.key.get_pressed()[pg.K_DOWN]:
@@ -113,9 +138,6 @@ class Game:
                     self.sprites_hidden = not self.sprites_hidden
 
             # Pellets
-            # rect = pg.Rect((self.pacman.rect.x, self.pacman.rect.y), (self.map.get_tilesize(), self.map.get_tilesize()))
-            # pg.draw.rect(self.window, (255, 0, 0), self.pacman.rect, 3)
-            # pg.display.update()
             colliding_idx = self.pacman.rect.collidelistall(self.pellet_group.sprites())
             colliding = [self.pellet_group.sprites()[i] for i in colliding_idx]
 
@@ -123,10 +145,12 @@ class Game:
             if len(colliding) != 0:
                 self.pellet_group.remove(colliding[0])
                 self.score += colliding[0].score()
-                self.text_highscore = self.font.render(f"HIGH SCORE: {self.score}", False, (255, 255, 255))
+                self.text_highscore = self.font.render(f"HIGH SCORE: {self.score}", False, Colors.WHITE)
 
 
             self.pacman.move()
+
+            self.text_lives = self.font.render(f"{self.pacman.get_lives()}UP", False, Colors.WHITE)
             # self.blinky.move()
             self.draw()
 

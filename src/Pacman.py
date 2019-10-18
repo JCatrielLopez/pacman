@@ -47,6 +47,10 @@ class Pacman(pg.sprite.Sprite):
         self.current_sprite = 0
 
         self.ghosts = []
+        self.lives = 3
+
+    def get_lives(self):
+        return self.lives
 
     def add_ghost(self, ghost):
         self.ghosts.append(ghost)
@@ -111,16 +115,14 @@ class Pacman(pg.sprite.Sprite):
     def move(self):
         tilesize = self.map.get_tilesize()
         cols = self.map.get_cols()
-        # if "in tile"
-        if self.rect.x % tilesize == 0 and self.rect.y % tilesize == 0:
-            if self.next_dir is not None:
-                j = int(self.rect.x / tilesize)
-                i = int(self.rect.y / tilesize)
-                j += int(self.next_dir[0] / self.speed)
-                i += int(self.next_dir[1] / self.speed)
-                if self.map.is_valid([j, i]):
-                    self.direction = self.next_dir
-                    self.next_dir = None
+        if self.rect.x % tilesize == 0 and self.rect.y % tilesize == 0 and self.next_dir is not None:
+            j = int(self.rect.x / tilesize)
+            i = int(self.rect.y / tilesize)
+            j += int(self.next_dir[0] / self.speed)
+            i += int(self.next_dir[1] / self.speed)
+            if self.map.is_valid([j, i]):
+                self.direction = self.next_dir
+                self.next_dir = None
 
         self.rect.x += self.direction[0]
         if 0 < self.rect.x < cols * tilesize:  # The pacman could be passing through a tunnel
@@ -130,6 +132,9 @@ class Pacman(pg.sprite.Sprite):
         ghosts_hit_list = pg.sprite.spritecollide(self, self.ghosts, False)
         for ghost in ghosts_hit_list:
             print("Hit", ghost.name, "at:", ghost.rect.x, ",", ghost.rect.y)
+
+        if len(ghosts_hit_list) > 0:
+            self.restart()
 
         self.check_limits()
 
@@ -164,3 +169,10 @@ class Pacman(pg.sprite.Sprite):
                 self.next_dir = None
             else:
                 self.next_dir = self.right
+
+    def restart(self):
+        # TODO Volver a la posicion inicial
+        # TODO Reiniciar el contador de puntaje
+        # TODO Reducir la cantidad de vidas en 1
+
+        pass
