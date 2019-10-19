@@ -133,8 +133,8 @@ class Pacman(pg.sprite.Sprite):
         for ghost in ghosts_hit_list:
             print("Hit", ghost.name, "at:", ghost.rect.x, ",", ghost.rect.y)
 
-        if len(ghosts_hit_list) > 0:
-            self.restart()
+        # if len(ghosts_hit_list) > 0:
+        #     self.restart()
 
         self.check_limits()
 
@@ -169,10 +169,3 @@ class Pacman(pg.sprite.Sprite):
                 self.next_dir = None
             else:
                 self.next_dir = self.right
-
-    def restart(self):
-        # TODO Volver a la posicion inicial
-        # TODO Reiniciar el contador de puntaje
-        # TODO Reducir la cantidad de vidas en 1
-
-        pass

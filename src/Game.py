@@ -115,6 +115,13 @@ class Game:
         self.window.blit(self.text_lives, (self.width - 150, 510))
         pg.display.update()
 
+    def restart(self):
+        # TODO Volver a la posicion inicial
+        # TODO Reiniciar el contador de puntaje
+        # TODO Reducir la cantidad de vidas en 1
+
+        pass
+
     # Main loop
     def run(self):
         running = True
@@ -147,9 +154,7 @@ class Game:
                 self.score += colliding[0].score()
                 self.text_highscore = self.font.render(f"HIGH SCORE: {self.score}", False, Colors.WHITE)
 
-
             self.pacman.move()
-
             self.text_lives = self.font.render(f"{self.pacman.get_lives()}UP", False, Colors.WHITE)
             # self.blinky.move()
             self.draw()
