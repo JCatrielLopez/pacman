@@ -16,6 +16,7 @@ class Map:
         self.distances = np.fromstring(f["costsMatrix"], dtype=int, sep=',').reshape((nodes, nodes), order='C')
 
         self.tilesize = f['tileSize']
+        self.bg_path = f["bg_image"]
 
     def is_valid(self, position):
         try:
@@ -27,6 +28,9 @@ class Map:
 
     def get_distance(self, position):
         return self.distances[position[0], position[1]]
+
+    def get_bg(self):
+        return self.bg_path
 
     def get_shape(self):
         return self.rows * self.tilesize, self.cols * self.tilesize

@@ -1,6 +1,5 @@
 from src.Game import Game
 
 if __name__ == "__main__":
-
-    game = Game()
+    game = Game(1, 0, 3)
     game.run()

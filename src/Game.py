@@ -22,22 +22,25 @@ class Wall(pg.sprite.Sprite):
 
 
 class Game:
-    def __init__(self):
 
-        self.map_number = 5
-        self.bg_image = pg.image.load(f"../res/map/map{self.map_number}.png")
+    def __init__(self, map, score, lives):
+
+        self.map_number = map
         self.map = Map(f"../res/map/map{self.map_number}.json")
+        self.bg_image = pg.image.load(f"../res/map/{self.map.get_bg()}")
         self.height, self.width = self.map.get_shape()
         margin_bottom = 50
         self.height += margin_bottom
         self.tilesize = self.map.get_tilesize()
         self.sprites_hidden = False
 
-        self.window = pg.display.set_mode((self.width, self.height))
+        self.window = pg.display.set_mode((self.width, self.height), flags=pg.NOFRAME)
         pg.display.set_caption("Pacman")
         self.clock = pg.time.Clock()
         self.FPS = 60
-        self.score = 0
+
+        self.score = score
+        self.highscore = self.score
 
         pg.init()
 
@@ -68,9 +71,10 @@ class Game:
                                     [sprites_pellets[pellet_pos], sprites_pellets[energizer_pellet_pos]])
                     self.pellet_group.add(pellet)
 
-        # todo use speeds like 2,4,8,16
+        # Characters
+        self.start_pos_pacman = (216, 272)
         self.blinky = Blinky(216, 176, self.map, self.wall_group, 2)
-        self.pacman = Pacman(216, 272, self.map, self.wall_group, 2)
+        self.pacman = Pacman(self.start_pos_pacman, self.map, self.wall_group, 2, lives)
         self.pacman.add_ghost(self.blinky)
         self.moving_sprites = pg.sprite.Group()
         self.moving_sprites.add(self.pacman)
@@ -79,8 +83,12 @@ class Game:
         # On screen text
         pg.font.init()
         self.font = pg.font.SysFont('default', 25, bold=True)
-        self.text_highscore = self.font.render("HIGH SCORE: 0", False, Colors.WHITE)
-        self.text_lives = self.font.render(f"{self.pacman.get_lives()}UP", False, Colors.WHITE)
+        self.text_highscore = self.font.render(f"HIGH SCORE: {self.highscore}", False, Colors.WHITE)
+        self.text_score = self.font.render(f"SCORE: {self.score}", False, Colors.WHITE)
+        self.text_lives = self.font.render(f"x{self.pacman.get_lives()}", False, Colors.WHITE)
+
+    def change_map(self, new_map):
+        self.__init__(new_map, self.score, self.pacman.get_lives())
 
     def toggle_fullscreen(self):
         screen = pg.display.get_surface()
@@ -111,16 +119,13 @@ class Game:
                 self.window.blit(pellet.get_sprite(), pellet.get_sprite_pos())
             self.window.blit(self.pacman.get_sprite(), self.pacman.get_sprite_pos())
             self.window.blit(self.blinky.get_sprite(), self.blinky.get_sprite_pos())
-        self.window.blit(self.text_highscore, (75, 510))
-        self.window.blit(self.text_lives, (self.width - 150, 510))
+        self.window.blit(self.text_highscore, (15, 510))
+        self.window.blit(self.text_lives, (self.width - 75, 510))
+        self.window.blit(self.text_score, (self.width / 2 - 20, 510))
         pg.display.update()
 
     def restart(self):
-        # TODO Volver a la posicion inicial
-        # TODO Reiniciar el contador de puntaje
-        # TODO Reducir la cantidad de vidas en 1
-
-        pass
+        self.pacman.restart()
 
     # Main loop
     def run(self):
@@ -141,6 +146,19 @@ class Game:
                 if pg.key.get_pressed()[pg.K_RIGHT]:
                     self.pacman.move_right()
 
+                if pg.key.get_pressed()[pg.K_r]:
+                    self.restart()
+                if pg.key.get_pressed()[pg.K_1]:
+                    self.change_map(1)
+                if pg.key.get_pressed()[pg.K_2]:
+                    self.change_map(2)
+                if pg.key.get_pressed()[pg.K_3]:
+                    self.change_map(3)
+                if pg.key.get_pressed()[pg.K_4]:
+                    self.change_map(4)
+                if pg.key.get_pressed()[pg.K_5]:
+                    self.change_map(5)
+
                 if pg.key.get_pressed()[pg.K_h]:
                     self.sprites_hidden = not self.sprites_hidden
 
@@ -148,14 +166,21 @@ class Game:
             colliding_idx = self.pacman.rect.collidelistall(self.pellet_group.sprites())
             colliding = [self.pellet_group.sprites()[i] for i in colliding_idx]
 
-            # TODO Separar SCORE de HIGH SCORE
             if len(colliding) != 0:
                 self.pellet_group.remove(colliding[0])
                 self.score += colliding[0].score()
-                self.text_highscore = self.font.render(f"HIGH SCORE: {self.score}", False, Colors.WHITE)
+                self.highscore = max(self.score, self.highscore)
+                self.text_highscore = self.font.render(f"HIGH SCORE: {self.highscore}", False, Colors.WHITE)
+                self.text_score = self.font.render(f"SCORE: {self.score}", False, Colors.WHITE)
+
+            if len(self.pellet_group.sprites()) == 0:
+                if self.map_number < 5:
+                    self.change_map(self.map_number + 1)
+                else:
+                    self.change_map(1)
 
             self.pacman.move()
-            self.text_lives = self.font.render(f"{self.pacman.get_lives()}UP", False, Colors.WHITE)
+            self.text_lives = self.font.render(f"x{self.pacman.get_lives()}", False, Colors.WHITE)
             # self.blinky.move()
             self.draw()
 
@@ -166,4 +191,4 @@ class Game:
 
 
 if __name__ == "__main__":
-    Game().run()
+    pass

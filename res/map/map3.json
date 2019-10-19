@@ -1,4 +1,5 @@
 {
+  "bg_image": "map3.png",
   "tileSize": 16,
   "mazeRows": 31,
   "mazeCols": 28,

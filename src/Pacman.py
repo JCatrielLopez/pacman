@@ -6,12 +6,13 @@ from src import Colors
 
 class Pacman(pg.sprite.Sprite):
 
-    def __init__(self, x, y, map, walls, speed=2):
+    def __init__(self, pos, map, walls, speed=2, lives=3):
         super().__init__()
 
         self.map = map
         self.walls = walls
         self.speed = speed
+        self.start_pos = pos
 
         self.up = [0, -self.speed]
         self.down = [0, self.speed]
@@ -27,8 +28,8 @@ class Pacman(pg.sprite.Sprite):
 
         # Make our top-left corner the passed-in location.
         self.rect = self.image.get_rect()
-        self.rect.y = y
-        self.rect.x = x
+        self.rect.x = pos[0]
+        self.rect.y = pos[1]
 
         coord = []
         for i in range(8):
@@ -47,7 +48,7 @@ class Pacman(pg.sprite.Sprite):
         self.current_sprite = 0
 
         self.ghosts = []
-        self.lives = 3
+        self.lives = lives
 
     def get_lives(self):
         return self.lives
@@ -85,6 +86,14 @@ class Pacman(pg.sprite.Sprite):
 
     def get_sprite_pos(self):
         return self.rect.centerx - self.map.get_tilesize(), self.rect.centery - self.map.get_tilesize()
+
+    def restart(self):
+        if self.lives > 0:
+            self.lives -= 1
+
+        self.rect.x, self.rect.y = self.start_pos
+        self.direction = self.right
+        self.next_dir = None
 
     def get_sprite(self):
         out_index = self.current_sprite
