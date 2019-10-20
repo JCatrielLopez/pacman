@@ -23,7 +23,7 @@ class Wall(pg.sprite.Sprite):
 
 class Game:
 
-    def __init__(self, map, score, lives):
+    def __init__(self, map, score, lives, flags):
 
         self.map_number = map
         self.map = Map(f"../res/map/map{self.map_number}.json")
@@ -34,7 +34,7 @@ class Game:
         self.tilesize = self.map.get_tilesize()
         self.sprites_hidden = False
 
-        self.window = pg.display.set_mode((self.width, self.height), flags=pg.NOFRAME)
+        self.window = pg.display.set_mode((self.width, self.height), flags=flags)
         pg.display.set_caption("Pacman")
         self.clock = pg.time.Clock()
         self.FPS = 60
@@ -86,11 +86,16 @@ class Game:
         self.text_highscore = self.font.render(f"HIGH SCORE: {self.highscore}", False, Colors.WHITE)
         self.text_score = self.font.render(f"SCORE: {self.score}", False, Colors.WHITE)
         self.text_lives = self.font.render(f"x{self.pacman.get_lives()}", False, Colors.WHITE)
+        self.fullscreen = False
 
     def change_map(self, new_map):
-        self.__init__(new_map, self.score, self.pacman.get_lives())
+        if self.fullscreen:
+            self.__init__(new_map, self.score, self.pacman.get_lives(), pg.FULLSCREEN)
+        else:
+            self.__init__(new_map, self.score, self.pacman.get_lives(), pg.NOFRAME)
 
     def toggle_fullscreen(self):
+        self.fullscreen = not self.fullscreen
         screen = pg.display.get_surface()
         tmp = screen.convert()
         caption = pg.display.get_caption()
