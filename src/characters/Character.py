@@ -1,7 +1,7 @@
 import pygame as pg
 
-import src.Spritesheet
-from src.Map import Map
+import src.game.spritesheet
+from src.game.map import Map
 
 
 class Character(object):
@@ -30,16 +30,16 @@ class Character(object):
             (128, 0, 16, 16),
         ]
 
-        self.sp_left = src.Spritesheet.Spritesheet(
+        self.sp_left = src.game.spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_left.png"
         )
-        self.sp_right = src.Spritesheet.Spritesheet(
+        self.sp_right = src.game.spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_right.png"
         )
-        self.sp_up = src.Spritesheet.Spritesheet(
+        self.sp_up = src.game.spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_up.png"
         )
-        self.sp_down = src.Spritesheet.Spritesheet(
+        self.sp_down = src.game.spritesheet.Spritesheet(
             f"{resources_path}/spritesheet_down.png"
         )
 
