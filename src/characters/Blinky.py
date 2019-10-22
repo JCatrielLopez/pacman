@@ -1,18 +1,17 @@
 import pygame as pg
 
-import src.Spritesheet
+import src.game.spritesheet
 from src import Colors
 
 
-class Pacman(pg.sprite.Sprite):
+class Blinky(pg.sprite.Sprite):
 
-    def __init__(self, pos, map, walls, speed=2, lives=3):
+    def __init__(self, x, y, map, walls, resources_path=None, speed=2):
         super().__init__()
 
         self.map = map
         self.walls = walls
         self.speed = speed
-        self.start_pos = pos
 
         self.up = [0, -self.speed]
         self.down = [0, self.speed]
@@ -24,44 +23,36 @@ class Pacman(pg.sprite.Sprite):
         self.next_dir = None
 
         self.image = pg.Surface([map.get_tilesize(), map.get_tilesize()])
-        self.image.fill(Colors.YELLOW)
+        self.image.fill(Colors.RED)
 
         # Make our top-left corner the passed-in location.
         self.rect = self.image.get_rect()
-        self.rect.x = pos[0]
-        self.rect.y = pos[1]
+        self.rect.y = y
+        self.rect.x = x
 
         coord = []
         for i in range(8):
             coord.append((i * map.get_tilesize() * 2, 0, map.get_tilesize() * 2, map.get_tilesize() * 2))
 
-        resources_path = "../res/pacman"
-        sp_left = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_left.png")
-        sp_right = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_right.png")
-        sp_up = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_up.png")
-        sp_down = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_down.png")
+        self.name = "Blinky"
+        resources_path = f"../res/ghosts/{self.name}"
+        sp_left = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_left.png")
+        sp_right = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_right.png")
+        sp_up = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_up.png")
+        sp_down = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_down.png")
+        sp_frightened = src.game.spritesheet.Spritesheet(f"../res/ghosts/frightened_spritesheet.png")
+        sp_frightened_white = src.game.spritesheet.Spritesheet(f"../res/ghosts/frightened_white_spritesheet.png")
 
         self.sprites_left = [sprite for sprite in sp_left.images_at(coord, -1)]
         self.sprites_right = [sprite for sprite in sp_right.images_at(coord, -1)]
         self.sprites_up = [sprite for sprite in sp_up.images_at(coord, -1)]
         self.sprites_down = [sprite for sprite in sp_down.images_at(coord, -1)]
+        self.sprites_frightened = [sprite for sprite in sp_frightened.images_at(coord, -1)]
+        self.sprites_frightened_white = [sprite for sprite in sp_frightened_white.images_at(coord, -1)]
+
         self.current_sprite = 0
 
-        self.ghosts = []
-        self.lives = lives
-
-    def get_lives(self):
-        return self.lives
-
-    def add_ghost(self, ghost):
-        self.ghosts.append(ghost)
-
     def adjust_movement(self):
-        # todo delete this comment in the future if is not necessary
-        # tmp = pg.sprite.Sprite()
-        # tmp.rect = pg.rect.Rect(x, y, self.map.get_tilesize(), self.map.get_tilesize())
-        # tmp.rect.x = x
-        # tmp.rect.y = y
 
         if self.direction == self.left or self.direction == self.right:
             # Did this update cause us to hit a wall?
@@ -87,20 +78,12 @@ class Pacman(pg.sprite.Sprite):
     def get_sprite_pos(self):
         return self.rect.centerx - self.map.get_tilesize(), self.rect.centery - self.map.get_tilesize()
 
-    def restart(self):
-        if self.lives > 0:
-            self.lives -= 1
-
-        self.rect.x, self.rect.y = self.start_pos
-        self.direction = self.right
-        self.next_dir = None
-
     def get_sprite(self):
         out_index = self.current_sprite
         self.current_sprite += 1
         self.current_sprite = self.current_sprite % len(self.sprites_left)
 
-        out_sprite = None
+        out_sprite = self.sprites_frightened[out_index]
         if self.direction == self.up:
             out_sprite = self.sprites_up[out_index]
         if self.direction == self.down:
@@ -121,9 +104,12 @@ class Pacman(pg.sprite.Sprite):
         if self.rect.x == (cols + 1) * tilesize:
             self.rect.x = -tilesize
 
-    def move(self):
+    def move(self, target):
         tilesize = self.map.get_tilesize()
         cols = self.map.get_cols()
+
+        self.direction = self.get_dir(target)
+
         if self.rect.x % tilesize == 0 and self.rect.y % tilesize == 0 and self.next_dir is not None:
             j = int(self.rect.x / tilesize)
             i = int(self.rect.y / tilesize)
@@ -137,13 +123,6 @@ class Pacman(pg.sprite.Sprite):
         if 0 < self.rect.x < cols * tilesize:  # The pacman could be passing through a tunnel
             self.rect.y += self.direction[1]
         self.adjust_movement()
-
-        ghosts_hit_list = pg.sprite.spritecollide(self, self.ghosts, False)
-        for ghost in ghosts_hit_list:
-            print("Hit", ghost.name, "at:", ghost.rect.x, ",", ghost.rect.y)
-
-        # if len(ghosts_hit_list) > 0:
-        #     self.restart()
 
         self.check_limits()
 

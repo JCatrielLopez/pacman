@@ -1,5 +1,5 @@
-from src.Character import Character
 from src.Observer import Observer
+from src.characters.Character import Character
 
 
 class Blinky1(Character, Observer):
