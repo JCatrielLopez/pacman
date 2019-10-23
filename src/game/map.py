@@ -23,6 +23,8 @@ class Map:
         self.map = np.fromstring(f["maze"], dtype=int, sep=',').reshape((self.rows, self.cols), order='C').transpose()
         self.distances = np.fromstring(f["costsMatrix"], dtype=int, sep=',').reshape((nodes, nodes), order='C')
 
+        self.indexDict = f["indexDictionary"]
+
         self.tilesize = f['tileSize']
         self.bg_path = f["bg_image"]
 
@@ -39,6 +41,9 @@ class Map:
 
     def get_distance(self, position):
         return self.distances[position[0], position[1]]
+
+    def get_index(self, position):
+        return int(self.indexDict[f"{position[0]}-{position[1]}"])
 
     def get_bg(self):
         return self.bg_path

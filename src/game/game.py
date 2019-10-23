@@ -138,7 +138,7 @@ class Game:
 
             self.pacman.move()
             self.text_lives = f"x{self.pacman.get_lives()}"
-            # self.blinky.move()
+            self.blinky.move(self.pacman.rect)
             self.draw()
 
             # Clock tick
