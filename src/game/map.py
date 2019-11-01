@@ -34,9 +34,8 @@ class Map:
     def is_valid(self, position):
         try:
             v = self.get_value(position[0], position[1])
-            return v == 1 or v == 2 or v == 3
+            return v in [1, 2, 3]
         except IndexError:
-            print("index error")
             return False
 
     def get_distance(self, position):
@@ -55,7 +54,7 @@ class Map:
         return self.map[x, y]
 
     def get_grid(self, position):
-        return int((position[0] + 15) / self.tilesize), int((position[1] + 15) / self.tilesize)
+        return int((position[0]) / self.tilesize), int((position[1]) / self.tilesize)
 
     def get_tilesize(self):
         return self.tilesize
@@ -86,7 +85,7 @@ class Map:
                     wall = Wall(i * tilesize, j * tilesize, tilesize, tilesize, Colors.DARK_GRAY)
                     self.wall_group.add(wall)
 
-                if value == 1 or value == 3:
+                if value in [1, 3]:
                     is_energizer = value != 1
                     pellet = Pellet(i * tilesize, j * tilesize, tilesize, is_energizer,
                                     [sprites_pellets[pellet_pos], sprites_pellets[energizer_pellet_pos]])

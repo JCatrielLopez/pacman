@@ -17,6 +17,7 @@ class Blinky(pg.sprite.Sprite):
         self.down = [0, self.speed]
         self.left = [-self.speed, 0]
         self.right = [self.speed, 0]
+
         self.moves = [self.up, self.down, self.right, self.left]
 
         self.direction = self.right
@@ -30,9 +31,7 @@ class Blinky(pg.sprite.Sprite):
         self.rect.y = y
         self.rect.x = x
 
-        coord = []
-        for i in range(8):
-            coord.append((i * map.get_tilesize() * 2, 0, map.get_tilesize() * 2, map.get_tilesize() * 2))
+        coord = [(i * map.get_tilesize() * 2, 0, map.get_tilesize() * 2, map.get_tilesize() * 2) for i in range(8)]
 
         self.name = "Blinky"
         resources_path = f"../res/ghosts/{self.name}"
@@ -60,22 +59,16 @@ class Blinky(pg.sprite.Sprite):
 
     def adjust_movement(self):
 
-        if self.direction == self.left or self.direction == self.right:
-            # Did this update cause us to hit a wall?
+        if self.direction in [self.left, self.right]:
             block_hit_list = pg.sprite.spritecollide(self, self.walls, False)
             for block in block_hit_list:
-                # If we are moving right, set our right side to the left side of
-                # the item we hit
                 if self.direction == self.right:
                     self.rect.right = block.rect.left
                 else:
-                    # Otherwise if we are moving left, do the opposite.
                     self.rect.left = block.rect.right
         else:
-            # Check and see if we hit anything
             block_hit_list = pg.sprite.spritecollide(self, self.walls, False)
             for block in block_hit_list:
-                # Reset our position based on the top/bottom of the object.
                 if self.direction == self.down:
                     self.rect.bottom = block.rect.top
                 else:
@@ -90,6 +83,7 @@ class Blinky(pg.sprite.Sprite):
         self.current_sprite = self.current_sprite % len(self.sprites_left)
 
         out_sprite = self.sprites_frightened[out_index]
+
         if self.direction == self.up:
             out_sprite = self.sprites_up[out_index]
         if self.direction == self.down:
@@ -133,38 +127,31 @@ class Blinky(pg.sprite.Sprite):
         if 0 < self.rect.x < cols * tilesize:  # Could be passing through a tunnel
             self.rect.y += self.direction[1]
 
-        # self.adjust_movement()
+        self.adjust_movement()
 
         self.check_limits()
 
+    def reverse(self):  # Paso para atras.
+        return [-self.direction[0], -self.direction[1]]
 
-    def reverse(self):
-        reverse = [0, 0]
-        if self.direction[0] != 0:
-            reverse[0] = -self.direction[0]
-        elif self.direction[1] != 0:
-            reverse[1] = -self.direction[1]
-        return reverse
-
-    def get_positions(self):
+    def get_positions(self):  # Devuelve todas las posiciones validas posibles desde la posicion actual
         positions = []
-        for move in self.moves:
-            index = self.get_pos_index(move)
-            if self.map.is_valid(index) and move != self.reverse():
-                positions.append(move)
+        for new_dir in self.moves:
+            next_pos = self.get_next_position(new_dir)
+            if self.map.is_valid(next_pos) and new_dir != self.reverse():
+                positions.append(next_pos)
         return positions
 
-    def get_pos_index(self, pos):
+    def get_next_position(self, new_dir):  # Devuelve la nueva posicion (posicion actual + nueva direccion).
 
-        j = int(self.rect.x / self.map.tilesize)
-        i = int(self.rect.y / self.map.tilesize)
-        if pos is not None:
-            j += int(pos[0] / self.speed)
-            i += int(pos[1] / self.speed)
+        current_grid_pos = self.map.get_grid(self.get_sprite_pos())
+        if new_dir is not None:
+            new_pos = current_grid_pos[0] + int(new_dir[0] / self.speed), \
+                      current_grid_pos[1] + int(new_dir[1] / self.speed)
+        return new_pos
 
-        return [j, i]
-
-    def next_position(self, target):
+    def next_position(self,
+                      target):  # Determina la proxima direccion a moverse, la que da la menor distancia al target.
         positions = self.get_positions()
         if len(positions) == 1:
             return positions[0]
@@ -172,11 +159,13 @@ class Blinky(pg.sprite.Sprite):
             next = positions[0]
             index_target = self.map.get_index(self.get_pos_value(target))
             for pos in positions:
-                if self.map.is_valid(pos):
-                    if self.map.get_distance(
-                            [self.map.get_index(self.get_pos_index(pos)), index_target]) < self.map.get_distance(
-                            [self.map.get_index(self.get_pos_index(next)), index_target]):
-                        next = pos
+
+                current_distance = self.map.get_distance(
+                    [self.map.get_index(self.get_next_position(pos)), index_target])
+                next_distance = self.map.get_distance([self.map.get_index(self.get_next_position(next)), index_target])
+
+                if current_distance < next_distance:
+                    next = pos
             return next
 
     def get_pos_value(self, value):
