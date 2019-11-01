@@ -1,4 +1,4 @@
-import src.Spritesheet
+import src.game.spritesheet
 from src.Observer import Observer
 
 
@@ -8,7 +8,7 @@ class Bonus(Observer):
         self._value = value
 
         Observer.__init__(self)
-        self.sp = src.Spritesheet.Spritesheet(f"{resources_path}/fruit 1.gif")
+        self.sp = src.game.spritesheet.Spritesheet(f"{resources_path}/fruit 1.gif")
 
     def add(self, condition):
         if condition:

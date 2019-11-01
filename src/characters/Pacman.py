@@ -1,17 +1,18 @@
 import pygame as pg
 
-import src.Spritesheet
+import src.game.spritesheet
 from src import Colors
 
 
 class Pacman(pg.sprite.Sprite):
 
-    def __init__(self, x, y, map, walls, speed=2):
+    def __init__(self, pos, map, speed=2, lives=3):
         super().__init__()
 
         self.map = map
-        self.walls = walls
+        self.walls = self.map.get_walls()
         self.speed = speed
+        self.start_pos = pos
 
         self.up = [0, -self.speed]
         self.down = [0, self.speed]
@@ -27,18 +28,18 @@ class Pacman(pg.sprite.Sprite):
 
         # Make our top-left corner the passed-in location.
         self.rect = self.image.get_rect()
-        self.rect.y = y
-        self.rect.x = x
+        self.rect.x = pos[0]
+        self.rect.y = pos[1]
 
         coord = []
         for i in range(8):
             coord.append((i * map.get_tilesize() * 2, 0, map.get_tilesize() * 2, map.get_tilesize() * 2))
 
         resources_path = "../res/pacman"
-        sp_left = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_left.png")
-        sp_right = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_right.png")
-        sp_up = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_up.png")
-        sp_down = src.Spritesheet.Spritesheet(f"{resources_path}/spritesheet_down.png")
+        sp_left = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_left.png")
+        sp_right = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_right.png")
+        sp_up = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_up.png")
+        sp_down = src.game.spritesheet.Spritesheet(f"{resources_path}/spritesheet_down.png")
 
         self.sprites_left = [sprite for sprite in sp_left.images_at(coord, -1)]
         self.sprites_right = [sprite for sprite in sp_right.images_at(coord, -1)]
@@ -47,6 +48,10 @@ class Pacman(pg.sprite.Sprite):
         self.current_sprite = 0
 
         self.ghosts = []
+        self.lives = lives
+
+    def get_lives(self):
+        return self.lives
 
     def add_ghost(self, ghost):
         self.ghosts.append(ghost)
@@ -82,6 +87,14 @@ class Pacman(pg.sprite.Sprite):
     def get_sprite_pos(self):
         return self.rect.centerx - self.map.get_tilesize(), self.rect.centery - self.map.get_tilesize()
 
+    def restart(self):
+        if self.lives > 0:
+            self.lives -= 1
+
+        self.rect.x, self.rect.y = self.start_pos
+        self.direction = self.right
+        self.next_dir = None
+
     def get_sprite(self):
         out_index = self.current_sprite
         self.current_sprite += 1
@@ -111,16 +124,14 @@ class Pacman(pg.sprite.Sprite):
     def move(self):
         tilesize = self.map.get_tilesize()
         cols = self.map.get_cols()
-        # if "in tile"
-        if self.rect.x % tilesize == 0 and self.rect.y % tilesize == 0:
-            if self.next_dir is not None:
-                j = int(self.rect.x / tilesize)
-                i = int(self.rect.y / tilesize)
-                j += int(self.next_dir[0] / self.speed)
-                i += int(self.next_dir[1] / self.speed)
-                if self.map.is_valid([j, i]):
-                    self.direction = self.next_dir
-                    self.next_dir = None
+        if self.rect.x % tilesize == 0 and self.rect.y % tilesize == 0 and self.next_dir is not None:
+            j = int(self.rect.x / tilesize)
+            i = int(self.rect.y / tilesize)
+            j += int(self.next_dir[0] / self.speed)
+            i += int(self.next_dir[1] / self.speed)
+            if self.map.is_valid([j, i]):
+                self.direction = self.next_dir
+                self.next_dir = None
 
         self.rect.x += self.direction[0]
         if 0 < self.rect.x < cols * tilesize:  # The pacman could be passing through a tunnel
@@ -130,6 +141,9 @@ class Pacman(pg.sprite.Sprite):
         ghosts_hit_list = pg.sprite.spritecollide(self, self.ghosts, False)
         for ghost in ghosts_hit_list:
             print("Hit", ghost.name, "at:", ghost.rect.x, ",", ghost.rect.y)
+
+        # if len(ghosts_hit_list) > 0:
+        #     self.restart()
 
         self.check_limits()
 
@@ -164,3 +178,7 @@ class Pacman(pg.sprite.Sprite):
                 self.next_dir = None
             else:
                 self.next_dir = self.right
+
+    def set_map(self, new_map):
+        self.map = new_map
+        self.walls = new_map.get_walls()
