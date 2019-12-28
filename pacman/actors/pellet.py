@@ -20,13 +20,23 @@ class Pellet(actor.Actor):
         if self.energizer:
             super().__init__(x, y, width, height, constants.WHITE, *groups)
             self.sprite = sp_pellets.image_at(
-                pg.Rect(0, index * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
+                pg.Rect(
+                    0,
+                    index * constants.TILE_SIZE,
+                    constants.TILE_SIZE,
+                    constants.TILE_SIZE,
+                )
             )
             self.score = 10
         else:
             super().__init__(x, y, width, height, constants.LIGHT_GRAY, *groups)
             self.sprite = sp_pellets.image_at(
-                pg.Rect(constants.TILE_SIZE, index * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
+                pg.Rect(
+                    constants.TILE_SIZE,
+                    index * constants.TILE_SIZE,
+                    constants.TILE_SIZE,
+                    constants.TILE_SIZE,
+                )
             )
             self.score = 30
 

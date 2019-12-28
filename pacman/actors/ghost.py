@@ -57,11 +57,10 @@ class Ghost(actor.MovingActor):
         return self.score
 
     def restart(self):
-        self.re
+        pass
 
 
 class Blinky(Ghost):
-
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.target_corner = (432, 0)
@@ -77,7 +76,6 @@ class Blinky(Ghost):
 
 
 class Pinky(Ghost):
-
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
 
@@ -100,7 +98,6 @@ class Pinky(Ghost):
 
 
 class Inky(Ghost):
-
     def __init__(self, x, y, width, height, res_path, pacman, blinky, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.blinky = blinky
@@ -121,9 +118,7 @@ class Inky(Ghost):
 
         vector = np.array(blinky_position) - np.array(aux)
 
-        distance = np.sqrt(
-            np.power(vector[0], 2) + np.power(vector[1], 2)
-        )
+        distance = np.sqrt(np.power(vector[0], 2) + np.power(vector[1], 2))
 
         new_target = self.get_pos()
         new_target = (new_target[0] + distance, new_target[1] + distance)
@@ -136,7 +131,6 @@ class Inky(Ghost):
 
 
 class Clyde(Ghost):
-
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.target_corner = (0, 480)
