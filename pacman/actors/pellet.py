@@ -1,5 +1,3 @@
-import configparser
-
 import pygame as pg
 
 from . import actor
@@ -19,20 +17,16 @@ class Pellet(actor.Actor):
             "/home/catriel/PycharmProjects/pac-man/res/map/Dots.png"
         )
 
-        config = configparser.ConfigParser()
-        config.read("../settings.conf")
-        tile_size = config.getint("GAME", "tile_size")
-
         if self.energizer:
             super().__init__(x, y, width, height, constants.WHITE, *groups)
             self.sprite = sp_pellets.image_at(
-                pg.Rect(0, index * tile_size, tile_size, tile_size)
+                pg.Rect(0, index * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
             )
             self.score = 10
         else:
             super().__init__(x, y, width, height, constants.LIGHT_GRAY, *groups)
             self.sprite = sp_pellets.image_at(
-                pg.Rect(tile_size, index * tile_size, tile_size, tile_size)
+                pg.Rect(constants.TILE_SIZE, index * constants.TILE_SIZE, constants.TILE_SIZE, constants.TILE_SIZE)
             )
             self.score = 30
 
