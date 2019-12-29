@@ -1,5 +1,3 @@
-import configparser
-
 import pygame as pg
 
 from . import constants
@@ -82,27 +80,10 @@ class Display:
     def is_fullscreen(self):
         return self.fullscreen
 
-    def blit(self, grid):
-        image = pg.Surface([16, 16])
-        image.fill(constants.BLUE)
-
-        self.surface.blit(image, grid)
+    def draw_image(self, path):
+        self.surface.blit(pg.image.load(path), (0, 0))
         self.update()
 
 
 if __name__ == "__main__":
-    pg.init()
-
-    config = configparser.ConfigParser()
-    read = config.read("../settings.conf")
-
-    # width x height
-    size = (config.getint("WINDOW", "width"), config.getint("WINDOW", "height"))
-    color = (0, 0, 0)
-    image = "/home/catriel/PycharmProjects/pac-man/res/map/map1.png"
-
-    d = Display(size, color, image)
-    m = Map("level_01.npz", 1)
-    d.add(m.get_walls())
-    d.add(m.get_pellets())
-    d.draw()
+    pass

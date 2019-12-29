@@ -9,7 +9,7 @@ class Ghost(actor.MovingActor):
     next_tile = None
     name = None
     mode_timer = 0
-    scare_timer = 8.0
+    scare_timer = 5.0
     scared = False
     score = 800
     pacman = None
@@ -26,7 +26,7 @@ class Ghost(actor.MovingActor):
         self.resources_path = res_path
         self.pacman = pacman
         self.mode = mode.Chase()
-        self.mode_timer = 45.0
+        self.mode_timer = 20.0
         self.mode.get_target_tile()
 
     def back(self, current_dir):

@@ -6,9 +6,7 @@ from .. import constants, spritesheet as sp
 class Actor(pg.sprite.Sprite):
     rect = None
     image = None
-    timer = None
-    last_timer = None
-    increment = 1 / constants.FPS
+
 
     def __init__(self, x, y, width, height, color, *groups):
         super().__init__(*groups)
@@ -26,12 +24,6 @@ class Actor(pg.sprite.Sprite):
     def in_collision(self, hitbox):
         pass
 
-    def add_timer(self):
-        self.timer += self.increment
-
-    def get_timer(self):
-        return self.timer
-
 
 class MovingActor(Actor):
     direction = None
@@ -40,6 +32,10 @@ class MovingActor(Actor):
     sprites_left = None
     sprites_right = None
     current_sprite = None
+
+    timer = None
+    last_timer = None
+    increment = 1 / constants.FPS
 
     def __init__(self, x, y, width, height, color, res_path, current_map, *groups):
         super().__init__(x, y, width, height, color, *groups)
@@ -186,3 +182,9 @@ class MovingActor(Actor):
 
     def get_direction(self):
         return self.direction
+
+    def add_timer(self):
+        self.timer += self.increment
+
+    def get_timer(self):
+        return self.timer

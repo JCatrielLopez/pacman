@@ -8,6 +8,7 @@ class Pacman(actor.MovingActor):
     lives = 3
     score = 0
     current_map = None
+    pellets_consumed = 0
 
     sprites_left = None
     sprites_right = None
@@ -32,6 +33,7 @@ class Pacman(actor.MovingActor):
                 score += i.get_score()
                 pellet_list.remove(i)
 
+        self.pellets_consumed += len(colliding)
         return score, pellet_list, energizer_consumed
 
     def add_score(self, score):
@@ -52,3 +54,9 @@ class Pacman(actor.MovingActor):
                 hits.append(hitbox)
 
         return collided, hits
+
+    def get_consumed_amount(self):
+        return self.pellets_consumed
+
+    def set_lives(self, param):
+        self.lives = param

@@ -53,9 +53,15 @@ class Game:
             self.clock.tick(constants.FPS)
 
 
-if __name__ == "__main__":
-    display = display.Display((constants.WIDTH, constants.HEIGHT))
-
+def main(display):
     g = Game()
+
     first_level = scene.FirstLevel(display, "../res/map/01_level.npz", 0)
     g.run(first_level)
+
+
+if __name__ == "__main__":
+    import cProfile
+
+    dis = display.Display((constants.WIDTH, constants.HEIGHT))
+    cProfile.run('main(dis)')

@@ -92,10 +92,4 @@ class Map:
 
 
 if __name__ == "__main__":
-    m = Map("../res/map/level_01.npz")
-    pos = (1, 5)
-    end = (27, 26)
-
-    print(m.get_distance(pos, end))
-    print(m.is_valid(pos))
-    print(m.is_valid(end))
+    pass

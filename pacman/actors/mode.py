@@ -23,7 +23,6 @@ class Mode:
 
         for opt in self.options:
             new_position = (current_grid[0] + opt[0], current_grid[1] + opt[1])
-
             if map.is_valid(new_position):
                 new_distance = map.get_distance(
                     new_position, map.get_grid(self.target_position)

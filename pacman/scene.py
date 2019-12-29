@@ -134,6 +134,8 @@ class BaseScene:
         )
         self.display.update()
 
+        # pg.image.save(self.display.surface, f"../res/screenshots/frame - {time.time()}")
+
     def switch(self, scene):
         self.next = scene
 
@@ -176,12 +178,25 @@ class FirstLevel(BaseScene):
         collided, eaten = self.pacman.check_collision(self.ghosts)
 
         if collided:
-            if not self.ghosts[0].is_scared():
-                self.switch(FirstLevel(self.display, "../res/map/01_level.npz", 0))
+            if self.pacman.get_lives():
+                if not self.ghosts[0].is_scared():
+                    self.pacman.set_lives(self.pacman.get_lives() - 1)
+                    self.lives_value = self.pacman.get_lives()
+
+                    scene = FirstLevel(self.display, "../res/map/01_level.npz", 0)
+                    scene.pacman.lives = self.lives_value
+                    scene.score_value = self.score_value
+                    scene.highscore_value = self.highscore_value
+
+                    self.switch(scene)
+                else:
+                    for ghost in eaten:
+                        self.score_value += ghost.get_score()
+                        ghost.restart()
             else:
-                for ghost in eaten:
-                    self.score_value += ghost.get_score()
-                    ghost.restart()
+                print("Game over!")
+                self.terminate()
+                # self.switch(GameOver(self.display))
 
 
 class SecondLevel(BaseScene):
@@ -334,3 +349,7 @@ class FifthLevel(BaseScene):
                 self.switch(FifthLevel(self.display, "../res/map/05_level.npz", 4))
             else:
                 self.score_value += self.ghosts[0].get_score()
+
+
+class GameOver(BaseScene):
+    pass
