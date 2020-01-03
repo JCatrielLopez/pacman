@@ -28,6 +28,7 @@ class Ghost(actor.MovingActor):
         self.mode = mode.Chase()
         self.mode_timer = 20.0
         self.mode.get_target_tile()
+        self.color = constants.RED
 
     def back(self, current_dir):
         return -current_dir[0], -current_dir[1]
@@ -37,6 +38,7 @@ class Ghost(actor.MovingActor):
         if (self.timer - self.last_timer) >= self.scare_timer:
             self.mode = mode.Chase()
             self.scared = False
+            self.image.fill(self.color)
             self.set_spritesheet(self.resources_path)
             self.last_timer = self.timer
 
@@ -47,6 +49,7 @@ class Ghost(actor.MovingActor):
     def scare(self):
         self.mode = mode.Frightened()
         self.scared = True
+        self.image.fill(constants.BLUE)
         self.last_timer = self.timer
         self.set_spritesheet("../res/ghosts/scared")
 
@@ -64,6 +67,8 @@ class Blinky(Ghost):
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.target_corner = (432, 0)
+        self.color = constants.RED
+        self.image.fill(self.color)
 
     def move(self):
         self.check_mode()
@@ -78,8 +83,9 @@ class Blinky(Ghost):
 class Pinky(Ghost):
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
-
         self.target_corner = (0, 0)
+        self.color = constants.PINK
+        self.image.fill(self.color)
 
     def move(self):
         self.check_mode()
@@ -101,8 +107,9 @@ class Inky(Ghost):
     def __init__(self, x, y, width, height, res_path, pacman, blinky, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.blinky = blinky
-
         self.target_corner = (432, 480)
+        self.color = constants.LIGHT_BLUE
+        self.image.fill(self.color)
 
     def move(self):
         self.check_mode()
@@ -134,6 +141,8 @@ class Clyde(Ghost):
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.target_corner = (0, 480)
+        self.color = constants.ORANGE
+        self.image.fill(self.color)
 
     def move(self):
         self.check_mode()

@@ -14,7 +14,7 @@ class Pellet(actor.Actor):
         self.energizer = energizer
 
         sp_pellets = spritesheet.Spritesheet(
-            "/home/catriel/PycharmProjects/pac-man/res/map/Dots.png"
+            "../res/map/Dots.png"
         )
 
         if self.energizer:
