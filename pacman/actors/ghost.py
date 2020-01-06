@@ -5,16 +5,10 @@ from .. import constants
 
 
 class Ghost(actor.MovingActor):
-    mode = None
-    next_tile = None
-    name = None
-    mode_timer = 0
-    scare_timer = 5.0
     scared = False
     score = 800
-    pacman = None
-    target_corner = None
-    resources_path = None
+    last_timer_mode = None
+    last_timer_scare = None
 
     def __init__(
             self, x, y, width, height, res_path, pacman, current_map=None, *groups
@@ -23,11 +17,30 @@ class Ghost(actor.MovingActor):
             x, y, width, height, constants.RED, res_path, current_map, *groups
         )
 
+        self.last_timer_mode = 0.0
+        self.last_timer_scare = 0.0
+
+        self.scare_timer = 6.0
+        self.mode_timer = 5.0
+
+        self.scatter_time_list = [7.0, 7.0, 5.0, 5.0]
+        self.chase_time_list = [20.0, 20.0, 20.0, 20.0]
+        self.scatter_time_index = 0
+        self.chase_time_index = 0
+
+        self.actual_mode = mode.SCATTER
+        self.mode_timer = self.scatter_time_list[self.scatter_time_index]
+        self.scatter_time_index += 1
+        self.mode = mode.Scatter()
+        self.last_mode = self.mode
+
+        self.next_tile = None
+        self.name = None
+        self.target_corner = None
+
         self.resources_path = res_path
         self.pacman = pacman
-        self.mode = mode.Chase()
-        self.mode_timer = 20.0
-        self.mode.get_target_tile()
+
         self.color = constants.RED
 
     def back(self, current_dir):
@@ -35,23 +48,45 @@ class Ghost(actor.MovingActor):
 
     def check_mode(self):
 
-        if (self.timer - self.last_timer) >= self.scare_timer:
-            self.mode = mode.Chase()
+        if (self.timer - self.last_timer_scare) >= self.scare_timer:
             self.scared = False
             self.image.fill(self.color)
             self.set_spritesheet(self.resources_path)
-            self.last_timer = self.timer
+            self.last_timer_scare = self.timer
+            self.mode = self.last_mode
+            self.mode.print_mode(self.name)
 
-        if (self.timer - self.last_timer) >= self.mode_timer:
-            self.mode = self.mode.next_mode()
-            self.last_timer = self.timer
+        if (self.timer - self.last_timer_mode) >= self.mode_timer:
+
+            if self.actual_mode == mode.SCATTER:
+                if self.chase_time_index < len(self.chase_time_list):
+                    self.actual_mode = mode.CHASE
+                    self.mode = mode.Chase()
+                    self.mode_timer = self.chase_time_list[self.chase_time_index]
+                    self.chase_time_index += 1
+
+            else:
+                if self.scatter_time_index < len(self.scatter_time_list):
+                    self.actual_mode = mode.SCATTER
+                    self.mode = mode.Scatter()
+                    print("corner: " + str(self.target_corner))
+                    self.mode.set_target_corner(self.target_corner)
+                    self.mode_timer = self.scatter_time_list[self.scatter_time_index]
+                    self.scatter_time_index += 1
+
+            self.last_timer_mode = self.timer
+            self.mode.print_mode(self.name)
 
     def scare(self):
+        self.last_mode = self.mode
+        self.mode_timer += self.scare_timer
+
         self.mode = mode.Frightened()
         self.scared = True
         self.image.fill(constants.BLUE)
-        self.last_timer = self.timer
+        self.last_timer_scare = self.timer
         self.set_spritesheet("../res/ghosts/scared")
+        self.mode.print_mode(self.name)
 
     def is_scared(self):
         return self.scared
@@ -67,8 +102,10 @@ class Blinky(Ghost):
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.target_corner = (432, 0)
+        self.mode.set_target_corner(self.target_corner)
         self.color = constants.RED
         self.image.fill(self.color)
+        self.name = "Blinky"
 
     def move(self):
         self.check_mode()
@@ -83,9 +120,11 @@ class Blinky(Ghost):
 class Pinky(Ghost):
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
-        self.target_corner = (0, 0)
+        self.target_corner = (32, 32)
+        self.mode.set_target_corner(self.target_corner)
         self.color = constants.PINK
         self.image.fill(self.color)
+        self.name = "Pinky"
 
     def move(self):
         self.check_mode()
@@ -108,8 +147,10 @@ class Inky(Ghost):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.blinky = blinky
         self.target_corner = (432, 480)
+        self.mode.set_target_corner(self.target_corner)
         self.color = constants.LIGHT_BLUE
         self.image.fill(self.color)
+        self.name = "Inky"
 
     def move(self):
         self.check_mode()
@@ -141,8 +182,10 @@ class Clyde(Ghost):
     def __init__(self, x, y, width, height, res_path, pacman, *groups):
         super().__init__(x, y, width, height, res_path, pacman, *groups)
         self.target_corner = (0, 480)
+        self.mode.set_target_corner(self.target_corner)
         self.color = constants.ORANGE
         self.image.fill(self.color)
+        self.name = "Clyde"
 
     def move(self):
         self.check_mode()

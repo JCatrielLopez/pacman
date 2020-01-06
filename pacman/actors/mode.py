@@ -2,10 +2,14 @@ import random
 
 from .. import constants
 
+SCATTER = 0
+CHASE = 1
+FRIGHTENED = 2
+
 
 class Mode:
     target_position = None
-    options = [constants.UP, constants.DOWN, constants.LEFT, constants.RIGHT]
+    options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
 
     def __init__(self):
         pass
@@ -38,8 +42,11 @@ class Chase(Mode):
     def set_target_tile(self, target):
         self.target_position = target
 
-    def next_mode(self):
-        return Scatter()
+    def set_target_corner(self, target_corner):
+        pass
+
+    def print_mode(self, name):
+        print(name, " - mode: Chase")
 
 
 class Frightened(Mode):
@@ -49,10 +56,17 @@ class Frightened(Mode):
             opt = random.choice(self.options)
         return opt
 
+    def print_mode(self, name):
+        print(name, " - mode: Frightened")
+
 
 class Scatter(Mode):
+
     def set_target_tile(self, target):
         pass
 
-    def next_mode(self):
-        return Chase()
+    def set_target_corner(self, target_corner):
+        self.target_position = target_corner
+
+    def print_mode(self, name):
+        print(name, " - mode: Scatter")

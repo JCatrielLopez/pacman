@@ -19,8 +19,6 @@ class Actor(pg.sprite.Sprite):
         self.rect.y = y
 
         self.timer = 0.0
-        self.last_timer = 0.0
-
     def in_collision(self, hitbox):
         pass
 
@@ -34,7 +32,6 @@ class MovingActor(Actor):
     current_sprite = None
 
     timer = None
-    last_timer = None
     increment = 1 / constants.FPS
 
     def __init__(self, x, y, width, height, color, res_path, current_map, *groups):
@@ -79,9 +76,6 @@ class MovingActor(Actor):
             out_sprite = self.sprites_right[out_index]
 
         return out_sprite
-
-    # def get_pos(self):
-    #     return self.rect.x, self.rect.y
 
     def get_pos(self):
         return (

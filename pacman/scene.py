@@ -18,7 +18,7 @@ class BaseScene:
         self.next = self
         self.display = display
         self.display.clean()
-        self.highscore_text = "HIGH SCORE: 0"
+        self.high_score_text = "HIGH SCORE: 0"
         self.score_text = "SCORE: 0"
         self.lives_text = "x"
         self.ghosts = []
@@ -118,14 +118,14 @@ class BaseScene:
         self.score_text = f"SCORE: {self.score_value}"
         if self.score_value > self.highscore_value:
             self.highscore_value = self.score_value
-        self.highscore_text = f"HIGH SCORE: {self.highscore_value}"
+        self.high_score_text = f"HIGH SCORE: {self.highscore_value}"
         self.lives_text = f"x{self.pacman.get_lives()}"
 
         return level_completed
 
     def render(self):
         self.display.draw()
-        self.display.render_text(self.highscore_text, False, constants.WHITE, (15, 510))
+        self.display.render_text(self.high_score_text, False, constants.WHITE, (15, 510))
         self.display.render_text(
             self.lives_text, False, constants.WHITE, (496 - 75, 510)
         )
@@ -167,8 +167,7 @@ class FirstLevel(BaseScene):
                     self.pacman.move_right()
                 elif event.dict["key"] == 276:
                     self.pacman.move_left()
-            else:
-                print(event.type)
+
         self.update()
 
     def update(self):
@@ -220,8 +219,6 @@ class SecondLevel(BaseScene):
                     self.pacman.move_right()
                 elif event.dict["key"] == 276:
                     self.pacman.move_left()
-            else:
-                print(event.type)
         self.update()
 
     def update(self):
@@ -258,8 +255,7 @@ class ThirdLevel(BaseScene):
                     self.pacman.move_right()
                 elif event.dict["key"] == 276:
                     self.pacman.move_left()
-            else:
-                print(event.type)
+
         self.update()
 
     def update(self):
@@ -296,8 +292,7 @@ class FourthLevel(BaseScene):
                     self.pacman.move_right()
                 elif event.dict["key"] == 276:
                     self.pacman.move_left()
-            else:
-                print(event.type)
+
         self.update()
 
     def update(self):
@@ -334,8 +329,6 @@ class FifthLevel(BaseScene):
                     self.pacman.move_right()
                 elif event.dict["key"] == 276:
                     self.pacman.move_left()
-            else:
-                print(event.type)
         self.update()
 
     def update(self):
