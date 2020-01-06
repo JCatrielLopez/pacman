@@ -5,6 +5,9 @@ from .. import constants
 
 
 class Ghost(actor.MovingActor):
+
+    #TODO arreglar ir a esquinas - agregar comer fantasmas y que vuelvan a la casa - que inicien en la casa
+
     scared = False
     score = 800
     last_timer_mode = None
@@ -29,10 +32,10 @@ class Ghost(actor.MovingActor):
         self.chase_time_index = 0
 
         self.actual_mode = mode.SCATTER
+        self.last_mode = self.actual_mode
         self.mode_timer = self.scatter_time_list[self.scatter_time_index]
         self.scatter_time_index += 1
         self.mode = mode.Scatter()
-        self.last_mode = self.mode
 
         self.next_tile = None
         self.name = None
@@ -48,13 +51,19 @@ class Ghost(actor.MovingActor):
 
     def check_mode(self):
 
-        if (self.timer - self.last_timer_scare) >= self.scare_timer:
+        if ((self.timer - self.last_timer_scare) >= self.scare_timer and self.actual_mode == mode.FRIGHTENED):
             self.scared = False
             self.image.fill(self.color)
             self.set_spritesheet(self.resources_path)
             self.last_timer_scare = self.timer
-            self.mode = self.last_mode
+            self.actual_mode = self.last_mode
+            if self.actual_mode == mode.SCATTER:
+                self.mode = mode.Scatter()
+                self.mode.set_target_corner(self.target_corner)
+            else:
+                self.mode = mode.Chase()
             self.mode.print_mode(self.name)
+
 
         if (self.timer - self.last_timer_mode) >= self.mode_timer:
 
@@ -78,10 +87,11 @@ class Ghost(actor.MovingActor):
             self.mode.print_mode(self.name)
 
     def scare(self):
-        self.last_mode = self.mode
+        self.last_mode = self.actual_mode
         self.mode_timer += self.scare_timer
 
         self.mode = mode.Frightened()
+        self.actual_mode = mode.FRIGHTENED
         self.scared = True
         self.image.fill(constants.BLUE)
         self.last_timer_scare = self.timer

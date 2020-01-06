@@ -7,7 +7,7 @@ import pacman.scene as scene
 
 class Game:
     clock = None
-    highscore_text = None
+    high_score_text = None
     score_text = None
     lives_text = None
 

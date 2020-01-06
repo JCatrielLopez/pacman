@@ -10,7 +10,7 @@ class BaseScene:
     characters = None
     pacman = None
     ghosts = None
-    highscore_value = 0
+    high_score_value = 0
     score_value = 0
     lives_value = 0
 
@@ -116,9 +116,9 @@ class BaseScene:
 
         self.score_value = self.get_score()
         self.score_text = f"SCORE: {self.score_value}"
-        if self.score_value > self.highscore_value:
-            self.highscore_value = self.score_value
-        self.high_score_text = f"HIGH SCORE: {self.highscore_value}"
+        if self.score_value > self.high_score_value:
+            self.high_score_value = self.score_value
+        self.high_score_text = f"HIGH SCORE: {self.high_score_value}"
         self.lives_text = f"x{self.pacman.get_lives()}"
 
         return level_completed
@@ -185,7 +185,7 @@ class FirstLevel(BaseScene):
                     scene = FirstLevel(self.display, "../res/map/01_level.npz", 0)
                     scene.pacman.lives = self.lives_value
                     scene.score_value = self.score_value
-                    scene.highscore_value = self.highscore_value
+                    scene.high_score_value = self.high_score_value
 
                     self.switch(scene)
                 else:
