@@ -11,8 +11,12 @@ class Mode:
     target_position = None
     options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
 
-    def __init__(self):
-        pass
+    def __init__(self, options):
+        if options is not None:
+            self.options = options
+
+    def set_options(self, options):
+        self.options = options
 
     def get_target_tile(self):
         return self.target_position
@@ -38,6 +42,33 @@ class Mode:
         return new_dir
 
 
+class Frightened(Mode):
+
+    def back(self, current_dir):
+        return -current_dir[0], -current_dir[1]
+
+    def get_next_dir(self, current, back, map):
+        current_grid = map.get_grid(current)
+
+        valid_options = []
+        for opt in self.options:
+            new_position = (current_grid[0] + opt[0], current_grid[1] + opt[1])
+            if map.is_valid(new_position):
+                valid_options.append(opt)
+
+        if (len(valid_options) == 2 and self.back(valid_options[0]) == valid_options[1]):
+            return None
+
+        opt = random.choice(valid_options)
+        return opt
+
+    def print_mode(self, name):
+        print(name, " - mode: Frightened")
+
+    def get_mode(self):
+        return FRIGHTENED
+
+
 class Chase(Mode):
     def set_target_tile(self, target):
         self.target_position = target
@@ -48,16 +79,8 @@ class Chase(Mode):
     def print_mode(self, name):
         print(name, " - mode: Chase")
 
-
-class Frightened(Mode):
-    def get_next_dir(self, current, back, map):
-        opt = random.choice(self.options)
-        while map.is_valid((current[0] + opt[0], current[1] + opt[1])):
-            opt = random.choice(self.options)
-        return opt
-
-    def print_mode(self, name):
-        print(name, " - mode: Frightened")
+    def get_mode(self):
+        return CHASE
 
 
 class Scatter(Mode):
@@ -70,3 +93,6 @@ class Scatter(Mode):
 
     def print_mode(self, name):
         print(name, " - mode: Scatter")
+
+    def get_mode(self):
+        return SCATTER
