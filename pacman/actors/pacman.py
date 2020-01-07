@@ -9,6 +9,7 @@ class Pacman(actor.MovingActor):
     score = 0
     current_map = None
     pellets_consumed = 0
+    power_up = False
 
     sprites_left = None
     sprites_right = None
@@ -34,7 +35,8 @@ class Pacman(actor.MovingActor):
                 pellet_list.remove(i)
 
         self.pellets_consumed += len(colliding)
-        return score, pellet_list, energizer_consumed
+        self.power_up = energizer_consumed
+        return score, pellet_list
 
     def add_score(self, score):
         self.score += score
