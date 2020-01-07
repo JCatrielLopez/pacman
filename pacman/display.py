@@ -15,7 +15,8 @@ class Display:
     groups = None
 
     def __init__(self, size):
-        self.surface = pg.display.set_mode(size)
+        flags = pg.DOUBLEBUF
+        self.surface = pg.display.set_mode(size, flags)
 
         self.bg_color = constants.BLACK
 
@@ -81,7 +82,7 @@ class Display:
         return self.fullscreen
 
     def draw_image(self, path):
-        self.surface.blit(pg.image.load(path), (0, 0))
+        self.surface.blit(pg.image.load(path).convert(), (0, 0))
         self.update()
 
 

@@ -10,3 +10,7 @@
 
 # pacman.py
 # TODO (1, 1): No restar vidas si los fantasmas estan muertos.
+
+
+__version__ = 0
+__author__ = ['Carpintero, Bautista\n', 'Lopez, Catriel\n', 'Severino, Natalia\n']
