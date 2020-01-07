@@ -46,8 +46,9 @@ class Display:
     def draw(self):
         self.surface.fill(self.bg_color)
 
-        for group in self.groups:
-            group.draw(self.surface)
+        if self.hide_sprites:
+            for group in self.groups:
+                group.draw(self.surface)
 
         # display_dim = self.surface.get_size()
         # for x in range(0, display_dim[0], 16):

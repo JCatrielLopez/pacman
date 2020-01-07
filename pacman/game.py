@@ -61,9 +61,10 @@ def main(display):
 
 
 if __name__ == "__main__":
-    # import cProfile
-    # dis = display.Display((constants.WIDTH, constants.HEIGHT))
-    # cProfile.run('main(dis)')
+    import cProfile
 
     dis = display.Display((constants.WIDTH, constants.HEIGHT))
-    main(dis)
+    cProfile.run('main(dis)', sort="cumtime")
+
+    # dis = display.Display((constants.WIDTH, constants.HEIGHT))
+    # main(dis)
