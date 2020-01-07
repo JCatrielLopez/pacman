@@ -98,28 +98,16 @@ class BaseScene:
     def process_input(self, events):
         pass
 
-    def _update(self):
+    def is_completed(self):
         self.pacman.move()
 
-        score, remaining, energizer = self.pacman.check_consumed(self.map.get_pellets())
-
-        for ghost in self.ghosts:
-            if energizer:
-                ghost.scare()
-            ghost.move()
+        score, remaining = self.pacman.check_consumed(self.map.get_pellets())
 
         self.map.pellet_group = remaining
         self.pacman.add_score(score)
 
         # Si la longitud es cero, entonces hay que cambiar de nivel.
         level_completed = not len(remaining)
-
-        self.score_value = self.get_score()
-        self.score_text = f"SCORE: {self.score_value}"
-        if self.score_value > self.high_score_value:
-            self.high_score_value = self.score_value
-        self.high_score_text = f"HIGH SCORE: {self.high_score_value}"
-        self.lives_text = f"x{self.pacman.get_lives()}"
 
         return level_completed
 
@@ -171,14 +159,26 @@ class FirstLevel(BaseScene):
         self.update()
 
     def update(self):
-        if super()._update():
+        if super().is_completed():
             self.switch(SecondLevel(self.display, "../res/map/02_level.npz", 1))
+
+        self.score_value = self.get_score()
+        self.score_text = f"SCORE: {self.score_value}"
+        if self.score_value > self.high_score_value:
+            self.high_score_value = self.score_value
+        self.high_score_text = f"HIGH SCORE: {self.high_score_value}"
+        self.lives_text = f"x{self.pacman.get_lives()}"
 
         collided, eaten = self.pacman.check_collision(self.ghosts)
 
+        for ghost in self.ghosts:
+            if self.pacman.power_up:
+                ghost.scare()
+            ghost.move()
+
         if collided:
             if self.pacman.get_lives():
-                if not self.ghosts[0].is_scared():
+                if not self.pacman.power_up:
                     self.pacman.set_lives(self.pacman.get_lives() - 1)
                     self.lives_value = self.pacman.get_lives()
 
@@ -222,7 +222,7 @@ class SecondLevel(BaseScene):
         self.update()
 
     def update(self):
-        if super()._update():
+        if super().is_completed():
             self.switch(ThirdLevel(self.display, "../res/map/03_level.npz", 2))
 
         collided, eaten = self.pacman.check_collision(self.ghosts)
@@ -259,7 +259,7 @@ class ThirdLevel(BaseScene):
         self.update()
 
     def update(self):
-        if super()._update():
+        if super().is_completed():
             self.switch(FourthLevel(self.display, "../res/map/04_level.npz", 3))
 
         collided, eaten = self.pacman.check_collision(self.ghosts)
@@ -296,7 +296,7 @@ class FourthLevel(BaseScene):
         self.update()
 
     def update(self):
-        if super()._update():
+        if super().is_completed():
             self.switch(FifthLevel(self.display, "../res/map/05_level.npz", 4))
 
         collided, eaten = self.pacman.check_collision(self.ghosts)
@@ -332,7 +332,7 @@ class FifthLevel(BaseScene):
         self.update()
 
     def update(self):
-        if super()._update():
+        if super().is_completed():
             self.switch(FirstLevel(self.display, "../res/map/01_level.npz", 0))
 
         collided, eaten = self.pacman.check_collision(self.ghosts)
