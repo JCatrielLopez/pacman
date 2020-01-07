@@ -7,7 +7,6 @@ class Actor(pg.sprite.Sprite):
     rect = None
     image = None
 
-
     def __init__(self, x, y, width, height, color, *groups):
         super().__init__(*groups)
 
@@ -17,8 +16,8 @@ class Actor(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
         self.timer = 0.0
+
     def in_collision(self, hitbox):
         pass
 
