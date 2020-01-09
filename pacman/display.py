@@ -10,7 +10,7 @@ class Display:
     bg_image = None
     hide_sprites = False
     show_values = False
-    fullscreen = False
+    full_screen = False
     font = None
     groups = None
 
@@ -76,10 +76,10 @@ class Display:
         self.hide_sprites = not self.hide_sprites
 
     def toggle_fullscreen(self):
-        self.fullscreen = not self.fullscreen
+        self.full_screen = not self.full_screen
 
     def is_fullscreen(self):
-        return self.fullscreen
+        return self.full_screen
 
     def draw_image(self, path):
         self.surface.blit(pg.image.load(path), (0, 0))
