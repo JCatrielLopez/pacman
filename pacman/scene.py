@@ -99,9 +99,9 @@ class GameScene:
         print("init: ", self.map_path)
         self.display.clean()
         self.display.set_background(self.map.get_background())
-        self.display.add(self.map.get_walls())
-        self.display.add(self.map.get_pellets())
-        self.display.add(self.characters)
+        self.display.add_static_sprites(self.map.get_walls())
+        self.display.add_moving_sprites(self.map.get_pellets())
+        self.display.add_moving_sprites(self.characters)
 
     def notify_scores(self):
         self.score_value = self.get_score()

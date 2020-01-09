@@ -22,7 +22,9 @@ class Display:
         pg.font.init()
         self.font = pg.font.SysFont("default", 20, bold=False)
 
-        self.groups = []
+        # self.groups = []
+        self.static_sprites = []
+        self.moving_sprites = []
 
     def __str__(self):
         return repr(self) + f" {self.surface.get_size()}"
@@ -32,33 +34,38 @@ class Display:
             cls.instance = super(Display, cls).__new__(cls)
         return cls.instance
 
-    def add(self, group):
-        if isinstance(group, pg.sprite.Group):
-            return self.groups.append(group)
+    # def add(self, group):
+    #     if isinstance(group, pg.sprite.Group):
+    #         return self.groups.append(group)
+    #
+    # def remove(self, group):
+    #     if isinstance(group, pg.sprite.Group):
+    #         self.groups.remove(group)
 
-    def remove(self, group):
+    def add_static_sprites(self, group):
         if isinstance(group, pg.sprite.Group):
-            self.groups.remove(group)
+            return self.static_sprites.append(group)
+
+    def add_moving_sprites(self, group):
+        if isinstance(group, pg.sprite.Group):
+            return self.moving_sprites.append(group)
 
     def set_background(self, image_path):
         self.bg_image = pg.image.load(image_path)
 
     def draw(self):
-        self.surface.fill(self.bg_color)
+        self.surface.fill(constants.BLACK)
 
         if self.hide_sprites:
-            for group in self.groups:
+            # TODO: Se podrian dibujar las paredes solamente una vez por mapa?
+            for group in self.static_sprites:
                 group.draw(self.surface)
-
-        # display_dim = self.surface.get_size()
-        # for x in range(0, display_dim[0], 16):
-        #     pg.draw.line(self.surface, (240, 255, 255), (x, 0), (x, display_dim[1]))
-        # for y in range(0, display_dim[1], 16):
-        #     pg.draw.line(self.surface, (240, 255, 255), (0, y), (display_dim[0], y))
-
-        if not self.hide_sprites:
+            # TODO: Se podrian dibujar los pellets solamente cuando te los comes?
+            for group in self.moving_sprites:
+                group.draw(self.surface)
+        else:
             self.surface.blit(self.bg_image, (0, 0))
-            for group in self.groups:
+            for group in self.moving_sprites:
                 for sprite in group:
                     self.surface.blit(sprite.get_sprite(), sprite.get_pos())
 
@@ -70,7 +77,8 @@ class Display:
         pg.display.update()
 
     def clean(self):
-        self.groups = []
+        self.static_sprites = []
+        self.moving_sprites = []
 
     def toggle_sprites(self):
         self.hide_sprites = not self.hide_sprites
@@ -80,10 +88,6 @@ class Display:
 
     def is_fullscreen(self):
         return self.full_screen
-
-    def draw_image(self, path):
-        self.surface.blit(pg.image.load(path), (0, 0))
-        self.update()
 
 
 if __name__ == "__main__":
