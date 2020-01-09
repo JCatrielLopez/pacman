@@ -15,6 +15,7 @@ class Map:
     bg_image = None
     wall_group = None
     pellet_group = None
+    index = None
 
     def __init__(self, path, index):
         loaded = np.load(path, allow_pickle=True)
@@ -23,6 +24,7 @@ class Map:
         self.indexes = loaded["indexes"].item()
         self.distances = loaded["distances"].transpose()
         self.bg_image = str(loaded["bg_image"])
+        self.index = int(loaded["index"])
         self.map_index = index
         self.wall_group = pg.sprite.Group()
         self.pellet_group = pg.sprite.Group()
