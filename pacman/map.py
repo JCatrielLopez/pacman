@@ -17,15 +17,14 @@ class Map:
     pellet_group = None
     index = None
 
-    def __init__(self, path, index):
+    def __init__(self, path):
         loaded = np.load(path, allow_pickle=True)
 
         self.maze = loaded["maze"]
         self.indexes = loaded["indexes"].item()
         self.distances = loaded["distances"].transpose()
         self.bg_image = str(loaded["bg_image"])
-        self.index = int(loaded["index"])
-        self.map_index = index
+        self.map_index = int(loaded["index"])
         self.wall_group = pg.sprite.Group()
         self.pellet_group = pg.sprite.Group()
 
@@ -52,7 +51,7 @@ class Map:
                         self.pellet_group,
                     )
 
-    def __new__(cls, path, index):
+    def __new__(cls, path):
         if not hasattr(cls, "instance"):
             cls.instance = super(Map, cls).__new__(cls)
         return cls.instance
