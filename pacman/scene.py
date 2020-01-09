@@ -1,11 +1,10 @@
 import pygame as pg
 
 from . import map, constants
-from .actors import pacman, ghost
+from .actors import pacman, ghost, mode
 
 
-class BaseScene:
-    next = None
+class GameScene:
     display = None
     characters = None
     pacman = None
@@ -13,18 +12,20 @@ class BaseScene:
     high_score_value = 0
     score_value = 0
     lives_value = 0
+    finish = None
+    map_path = None
 
-    def __init__(self, display, path, index):
-        self.next = self
+    def __init__(self, display, path):
+        self.finish = False
         self.display = display
-        self.display.clean()
         self.high_score_text = "HIGH SCORE: 0"
         self.score_text = "SCORE: 0"
         self.lives_text = "x"
         self.ghosts = []
 
-        self.map = map.Map(path, index)
-        self.display.set_background(self.map.get_background())
+        self.map_path = path
+        self.map = map.Map(path)
+        print("Scene: ", self.map)
 
         self.characters = pg.sprite.Group()
         self.pacman = pacman.Pacman(
@@ -33,8 +34,12 @@ class BaseScene:
             constants.TILE_SIZE,
             constants.TILE_SIZE,
             self.map,
+            self.notify_scores,
+            self.notify_lives,
+            self.notify_pellets_in_map_change,
             self.characters,
         )
+        self.notify_lives()
 
         blinky = ghost.Blinky(
             216,
@@ -90,26 +95,40 @@ class BaseScene:
 
         self.characters.add(*self.ghosts)
 
+    def init_scene(self):
+        print("init: ", self.map_path)
         self.display.clean()
+        self.display.set_background(self.map.get_background())
         self.display.add(self.map.get_walls())
         self.display.add(self.map.get_pellets())
         self.display.add(self.characters)
 
+    def notify_scores(self):
+        self.score_value = self.get_score()
+        self.score_text = f"SCORE: {self.score_value}"
+        if self.score_value > self.high_score_value:
+            self.high_score_value = self.score_value
+            self.high_score_text = f"HIGH SCORE: {self.high_score_value}"
+
+    def notify_lives(self):
+        self.lives_text = f"x{self.pacman.get_lives()}"
+        if self.pacman.get_lives() <= 0:
+            self.terminate()
+
+    def notify_pellets_in_map_change(self, remaining):
+        self.map.pellet_group = remaining
+        # TODO Chequear aca??? pensar
+        # self.check_level_completed()
+
     def process_input(self, events):
         pass
 
-    def is_completed(self):
-        self.pacman.move()
-
-        score, remaining = self.pacman.check_consumed(self.map.get_pellets())
-
-        self.map.pellet_group = remaining
-        self.pacman.add_score(score)
+    def check_level_completed(self):
 
         # Si la longitud es cero, entonces hay que cambiar de nivel.
-        level_completed = not len(remaining)
-
-        return level_completed
+        level_completed = not len(self.map.pellet_group)
+        if level_completed:
+            self.terminate()
 
     def render(self):
         self.display.draw()
@@ -124,29 +143,26 @@ class BaseScene:
 
         # pg.image.save(self.display.surface, f"../res/screenshots/frame - {time.time()}")
 
-    def switch(self, scene):
-        self.next = scene
-
     def terminate(self):
-        self.next = None
+        self.finish = True
+        self.display.clean()
+
+    def is_finish(self):
+        return self.finish
 
     def get_score(self):
         return self.pacman.get_score()
 
-
-class FirstLevel(BaseScene):
-    def __init__(self, display, path, index):
-        super().__init__(display, path, index)
-
     def process_input(self, events):
         for event in events:
             if event.type == 2:  # Key pressed
                 if event.dict["key"] == 104:
                     self.display.toggle_sprites()
-                elif event.dict["key"] == 8:
-                    self.switch(SecondLevel(self.display, "../res/map/02_level.npz", 1))
-                elif event.dict["key"] == 114:
-                    self.switch(FirstLevel(self.display, "../res/map/01_level.npz", 0))
+                elif event.dict["key"] == 8:  # next level
+                    self.terminate()
+                elif event.dict["key"] == 114:  # reset
+                    # TODO Ahora el reset lo implemento en game.py
+                    print("RESET!!!!!")
                 elif event.dict["key"] == 273:
                     self.pacman.move_up()
                 elif event.dict["key"] == 274:
@@ -159,190 +175,29 @@ class FirstLevel(BaseScene):
         self.update()
 
     def update(self):
-        if super().is_completed():
-            self.switch(SecondLevel(self.display, "../res/map/02_level.npz", 1))
-
-        self.score_value = self.get_score()
-        self.score_text = f"SCORE: {self.score_value}"
-        if self.score_value > self.high_score_value:
-            self.high_score_value = self.score_value
-        self.high_score_text = f"HIGH SCORE: {self.high_score_value}"
-        self.lives_text = f"x{self.pacman.get_lives()}"
-
-        collided, eaten = self.pacman.check_collision(self.ghosts)
-
+        self.pacman.move()
         for ghost in self.ghosts:
-            if self.pacman.power_up:
-                ghost.scare()
             ghost.move()
 
-        if collided:
-            if self.pacman.get_lives():
-                if not self.pacman.power_up:
-                    self.pacman.set_lives(self.pacman.get_lives() - 1)
-                    self.lives_value = self.pacman.get_lives()
+        self.pacman.check_collision_pellets(self.map.get_pellets())
 
-                    scene = FirstLevel(self.display, "../res/map/01_level.npz", 0)
-                    scene.pacman.lives = self.lives_value
-                    scene.score_value = self.score_value
-                    scene.high_score_value = self.high_score_value
+        collided, eaten = self.pacman.check_collision_ghosts(self.ghosts)
 
-                    self.switch(scene)
-                else:
-                    for ghost in eaten:
-                        self.score_value += ghost.get_score()
-                        ghost.restart()
-            else:
-                print("Game over!")
-                self.terminate()
-                # self.switch(GameOver(self.display))
-
-
-class SecondLevel(BaseScene):
-    def __init__(self, display, path, index):
-        super().__init__(display, path, index)
-
-    def process_input(self, events):
-        for event in events:
-            if event.type == 2:  # Key pressed
-                if event.dict["key"] == 104:
-                    self.display.toggle_sprites()
-                elif event.dict["key"] == 8:
-                    self.switch(ThirdLevel(self.display, "../res/map/03_level.npz", 2))
-                elif event.dict["key"] == 114:
-                    self.switch(SecondLevel(self.display, "../res/map/02_level.npz", 1))
-                elif event.dict["key"] == 273:
-                    self.pacman.move_up()
-                elif event.dict["key"] == 274:
-                    self.pacman.move_down()
-                elif event.dict["key"] == 275:
-                    self.pacman.move_right()
-                elif event.dict["key"] == 276:
-                    self.pacman.move_left()
-        self.update()
-
-    def update(self):
-        if super().is_completed():
-            self.switch(ThirdLevel(self.display, "../res/map/03_level.npz", 2))
-
-        collided, eaten = self.pacman.check_collision(self.ghosts)
+        if self.ghosts[0].mode.get_mode() != mode.FRIGHTENED and self.pacman.power_up:
+            for ghost in self.ghosts:
+                ghost.scare()
 
         if collided:
-            if not self.ghosts[0].is_scared():
-                self.switch(FirstLevel(self.display, "../res/map/02_level.npz", 1))
+            if not self.pacman.power_up:
+                self.pacman.decrement_lives()
+
+                for ghost in self.ghosts:
+                    ghost.restart()
+                self.pacman.restart()
+
             else:
-                self.score_value += self.ghosts[0].get_score()
+                for ghost in eaten:
+                    ghost.eaten()
+                    self.score_value += ghost.get_score()
 
-
-class ThirdLevel(BaseScene):
-    def __init__(self, display, path, index):
-        super().__init__(display, path, index)
-
-    def process_input(self, events):
-        for event in events:
-            if event.type == 2:  # Key pressed
-                if event.dict["key"] == 104:
-                    self.display.toggle_sprites()
-                elif event.dict["key"] == 8:
-                    self.switch(FourthLevel(self.display, "../res/map/04_level.npz", 3))
-                elif event.dict["key"] == 114:
-                    self.switch(ThirdLevel(self.display, "../res/map/03_level.npz", 2))
-                elif event.dict["key"] == 273:
-                    self.pacman.move_up()
-                elif event.dict["key"] == 274:
-                    self.pacman.move_down()
-                elif event.dict["key"] == 275:
-                    self.pacman.move_right()
-                elif event.dict["key"] == 276:
-                    self.pacman.move_left()
-
-        self.update()
-
-    def update(self):
-        if super().is_completed():
-            self.switch(FourthLevel(self.display, "../res/map/04_level.npz", 3))
-
-        collided, eaten = self.pacman.check_collision(self.ghosts)
-
-        if collided:
-            if not self.ghosts[0].is_scared():
-                self.switch(ThirdLevel(self.display, "../res/map/03_level.npz", 2))
-            else:
-                self.score_value += self.ghosts[0].get_score()
-
-
-class FourthLevel(BaseScene):
-    def __init__(self, display, path, index):
-        super().__init__(display, path, index)
-
-    def process_input(self, events):
-        for event in events:
-            if event.type == 2:  # Key pressed
-                if event.dict["key"] == 104:
-                    self.display.toggle_sprites()
-                elif event.dict["key"] == 8:
-                    self.switch(FifthLevel(self.display, "../res/map/05_level.npz", 4))
-                elif event.dict["key"] == 114:
-                    self.switch(FourthLevel(self.display, "../res/map/04_level.npz", 3))
-                elif event.dict["key"] == 273:
-                    self.pacman.move_up()
-                elif event.dict["key"] == 274:
-                    self.pacman.move_down()
-                elif event.dict["key"] == 275:
-                    self.pacman.move_right()
-                elif event.dict["key"] == 276:
-                    self.pacman.move_left()
-
-        self.update()
-
-    def update(self):
-        if super().is_completed():
-            self.switch(FifthLevel(self.display, "../res/map/05_level.npz", 4))
-
-        collided, eaten = self.pacman.check_collision(self.ghosts)
-
-        if collided:
-            if not self.ghosts[0].is_scared():
-                self.switch(FourthLevel(self.display, "../res/map/04_level.npz", 3))
-            else:
-                self.score_value += self.ghosts[0].get_score()
-
-
-class FifthLevel(BaseScene):
-    def __init__(self, display, path, index):
-        super().__init__(display, path, index)
-
-    def process_input(self, events):
-        for event in events:
-            if event.type == 2:  # Key pressed
-                if event.dict["key"] == 104:
-                    self.display.toggle_sprites()
-                elif event.dict["key"] == 8:
-                    self.switch(FirstLevel(self.display, "../res/map/01_level.npz", 0))
-                elif event.dict["key"] == 114:
-                    self.switch(FifthLevel(self.display, "../res/map/05_level.npz", 4))
-                elif event.dict["key"] == 273:
-                    self.pacman.move_up()
-                elif event.dict["key"] == 274:
-                    self.pacman.move_down()
-                elif event.dict["key"] == 275:
-                    self.pacman.move_right()
-                elif event.dict["key"] == 276:
-                    self.pacman.move_left()
-        self.update()
-
-    def update(self):
-        if super().is_completed():
-            self.switch(FirstLevel(self.display, "../res/map/01_level.npz", 0))
-
-        collided, eaten = self.pacman.check_collision(self.ghosts)
-
-        if collided:
-            if not self.ghosts[0].is_scared():
-                self.switch(FifthLevel(self.display, "../res/map/05_level.npz", 4))
-            else:
-                self.score_value += self.ghosts[0].get_score()
-
-
-class GameOver(BaseScene):
-    pass
+            self.check_level_completed()
