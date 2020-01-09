@@ -41,7 +41,15 @@ class MovingActor(Actor):
         self.direction = constants.LEFT
         self.next_dir = constants.LEFT
 
+        self.original_x = x
+        self.original_y = y
+
         self.current_map = current_map
+
+    def restart(self):
+        self.rect.x = self.original_x
+        self.rect.y = self.original_y
+        self.direction = constants.LEFT
 
     def set_spritesheet(self, path):
         coord = []
@@ -126,7 +134,7 @@ class MovingActor(Actor):
             j += self.next_dir[0]
             i += self.next_dir[1]
 
-            if self.current_map.is_valid((j, i)):
+            if self.current_map.is_valid((j, i)) or self.current_map.get_value((j, i)) == 4:
                 self.direction = self.next_dir
                 self.next_dir = None
 
