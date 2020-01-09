@@ -5,7 +5,7 @@ from .. import constants
 
 
 class Ghost(actor.MovingActor):
-    # TODO agregar comer fantasmas y que vuelvan a la casa - que inicien en la casa - mantener puntos comidos cuando te moris
+    # TODO agregar comer fantasmas y que vuelvan a la casa - que inicien en la casa
 
     scared = False
     score = 800
@@ -50,32 +50,35 @@ class Ghost(actor.MovingActor):
 
     def check_mode(self):
 
-        if (self.timer - self.last_timer_scare) >= self.scare_timer and self.mode.get_mode() == mode.FRIGHTENED:
-            self.scared = False
-            self.image.fill(self.color)
-            self.set_spritesheet(self.resources_path)
-            self.last_timer_scare = self.timer
-            self.mode = self.last_mode
-            self.mode.print_mode(self.name)
+        if self.mode.get_mode() != mode.DEAD:
 
-        if (self.timer - self.last_timer_mode) >= self.mode_timer:
+            if (self.timer - self.last_timer_scare) >= self.scare_timer and self.mode.get_mode() == mode.FRIGHTENED:
+                self.scared = False
+                self.pacman.power_up = False
+                self.image.fill(self.color)
+                self.set_spritesheet(self.resources_path)
+                self.last_timer_scare = self.timer
+                self.mode = self.last_mode
+                self.mode.print_mode(self.name)
 
-            if self.mode.get_mode() == mode.SCATTER:
-                if self.chase_time_index < len(self.chase_time_list):
-                    self.mode = mode.Chase(self.options)
-                    self.mode_timer = self.chase_time_list[self.chase_time_index]
-                    self.chase_time_index += 1
+            if (self.timer - self.last_timer_mode) >= self.mode_timer:
 
-            else:
-                if self.scatter_time_index < len(self.scatter_time_list):
-                    self.mode = mode.Scatter(self.options)
-                    print("corner: " + str(self.target_corner))
-                    self.mode.set_target_corner(self.target_corner)
-                    self.mode_timer = self.scatter_time_list[self.scatter_time_index]
-                    self.scatter_time_index += 1
+                if self.mode.get_mode() == mode.SCATTER:
+                    if self.chase_time_index < len(self.chase_time_list):
+                        self.mode = mode.Chase(self.options)
+                        self.mode_timer = self.chase_time_list[self.chase_time_index]
+                        self.chase_time_index += 1
 
-            self.last_timer_mode = self.timer
-            self.mode.print_mode(self.name)
+                else:
+                    if self.scatter_time_index < len(self.scatter_time_list):
+                        self.mode = mode.Scatter(self.options)
+                        print("corner: " + str(self.target_corner))
+                        self.mode.set_target_corner(self.target_corner)
+                        self.mode_timer = self.scatter_time_list[self.scatter_time_index]
+                        self.scatter_time_index += 1
+
+                self.last_timer_mode = self.timer
+                self.mode.print_mode(self.name)
 
     def scare(self):
         self.last_mode = self.mode
@@ -87,14 +90,15 @@ class Ghost(actor.MovingActor):
         self.set_spritesheet("../res/ghosts/scared")
         self.mode.print_mode(self.name)
 
+    def eaten(self):
+        self.mode = mode.Dead(self.options)
+        self.mode.print_mode(self.name)
+
     def is_scared(self):
         return self.scared
 
     def get_score(self):
         return self.score
-
-    def restart(self):
-        pass
 
 
 class Blinky(Ghost):
