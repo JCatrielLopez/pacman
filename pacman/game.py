@@ -41,14 +41,6 @@ class Game:
             active_scene.init_scene()
             print(f"Active scene: {active_scene}")
 
-            # TODO  while not active_scene.is_finish(): ¿?¿?¿?
-            '''
-                Ahora que termine la scene puede significar que:
-                    - O el jugador gano el nivel
-                    - O perdio.....
-                    ¿Que hacemos? en este if preguntamos por si gano o perdio?
-            '''
-
             while not active_scene.is_finish():
                 filtered_events = []
                 for event in pg.event.get():
@@ -59,8 +51,6 @@ class Game:
                         break;
 
                     if pg.key.get_pressed()[pg.K_r]:  # Reset
-                        # TODO Este reset asi esta bien?
-                        # filtered_events.append(event)
                         active_scene.terminate()
                         active_scene = scene.GameScene(self.display, scene_path)
                         active_scene.init_scene()
@@ -84,7 +74,7 @@ class Game:
 
                 self.clock.tick(constants.FPS)
 
-            if quit_game:
+            if quit_game or active_scene.pacman_lose():
                 break;
 
 

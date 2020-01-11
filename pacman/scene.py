@@ -117,8 +117,14 @@ class GameScene:
 
     def notify_pellets_in_map_change(self, remaining):
         self.map.pellet_group = remaining
-        # TODO Chequear aca??? pensar
-        # self.check_level_completed()
+        self.check_level_completed()
+
+        if self.pacman.power_up:
+            for ghost in self.ghosts:
+                ghost.scare()
+
+    def pacman_lose(self):
+        return self.pacman.get_lives() <= 0
 
     def process_input(self, events):
         pass
@@ -160,9 +166,6 @@ class GameScene:
                     self.display.toggle_sprites()
                 elif event.dict["key"] == 8:  # next level
                     self.terminate()
-                elif event.dict["key"] == 114:  # reset
-                    # TODO Ahora el reset lo implemento en game.py
-                    print("RESET!!!!!")
                 elif event.dict["key"] == 273:
                     self.pacman.move_up()
                 elif event.dict["key"] == 274:
@@ -183,10 +186,6 @@ class GameScene:
 
         collided, eaten = self.pacman.check_collision_ghosts(self.ghosts)
 
-        if self.ghosts[0].mode.get_mode() != mode.FRIGHTENED and self.pacman.power_up:
-            for ghost in self.ghosts:
-                ghost.scare()
-
         if collided:
             if not self.pacman.power_up:
                 self.pacman.decrement_lives()
@@ -200,4 +199,3 @@ class GameScene:
                     ghost.eaten()
                     self.score_value += ghost.get_score()
 
-            self.check_level_completed()

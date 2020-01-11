@@ -48,8 +48,8 @@ class Frightened(Mode):
     def back(self, current_dir):
         return -current_dir[0], -current_dir[1]
 
-    def get_next_dir(self, current, back, map):
-        current_grid = map.get_grid(current)
+    def get_next_dir(self, current_position, back, map):
+        current_grid = map.get_grid(current_position)
 
         valid_options = []
         for opt in self.options:
@@ -57,7 +57,7 @@ class Frightened(Mode):
             if map.is_valid(new_position):
                 valid_options.append(opt)
 
-        if (len(valid_options) == 2 and self.back(valid_options[0]) == valid_options[1]):
+        if len(valid_options) == 2 and self.back(valid_options[0]) == valid_options[1]:
             return None
 
         opt = random.choice(valid_options)
@@ -68,6 +68,35 @@ class Frightened(Mode):
 
     def get_mode(self):
         return FRIGHTENED
+
+
+class Dead(Mode):
+
+    def set_target_tile(self, target):
+        self.target_position = (208, 208)
+
+    def print_mode(self, name):
+        print(name, " - mode: Dead")
+
+    def get_mode(self):
+        return DEAD
+
+    def get_next_dir(self, current_position, back, map):
+        current_grid = map.get_grid(current_position)
+        new_dir = None
+        min_distance = 10000
+
+        for opt in self.options:
+            new_position = (current_grid[0] + opt[0], current_grid[1] + opt[1])
+            if map.is_valid(new_position) or map.get_value(new_position) == 4:
+                new_distance = map.get_distance(
+                    new_position, map.get_grid(self.target_position)
+                )
+                if new_distance < min_distance and opt != back:
+                    min_distance = new_distance
+                    new_dir = opt
+
+        return new_dir
 
 
 class Chase(Mode):
@@ -97,32 +126,3 @@ class Scatter(Mode):
 
     def get_mode(self):
         return SCATTER
-
-
-class Dead(Mode):
-
-    def set_target_tile(self, target):
-        self.target_position = (208, 208)
-
-    def print_mode(self, name):
-        print(name, " - mode: Dead")
-
-    def get_mode(self):
-        return DEAD
-
-    def get_next_dir(self, current, back, map):
-        current_grid = map.get_grid(current)
-        new_dir = None
-        min_distance = 10000
-
-        for opt in self.options:
-            new_position = (current_grid[0] + opt[0], current_grid[1] + opt[1])
-            if map.is_valid(new_position) or map.get_value(new_position) == 4:
-                new_distance = map.get_distance(
-                    new_position, map.get_grid(self.target_position)
-                )
-                if new_distance < min_distance and opt != back:
-                    min_distance = new_distance
-                    new_dir = opt
-
-        return new_dir
