@@ -77,7 +77,6 @@ class Map:
             row = self.indexes[begin]
             col = self.indexes[end]
         except KeyError:
-            # Estamos en un tunel!
             return 0
 
         return self.distances[row][col]

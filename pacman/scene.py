@@ -1,5 +1,6 @@
 import pygame as pg
 
+from pacman.actors.state import State
 from . import map, constants
 from .actors import pacman, ghost, mode
 
@@ -22,6 +23,7 @@ class GameScene:
         self.score_text = "SCORE: 0"
         self.lives_text = "x"
         self.ghosts = []
+
 
         self.map_path = path
         self.map = map.Map(path)
@@ -94,9 +96,10 @@ class GameScene:
         )
 
         self.characters.add(*self.ghosts)
+        State.set_notify_dual_state_change(self.notify_dual_state_change)
+        State.set_notify_out_of_frightened(self.notify_out_of_frightened)
 
     def init_scene(self):
-        print("init: ", self.map_path)
         self.display.clean()
         self.display.set_background(self.map.get_background())
         self.display.add_static_sprites(self.map.get_walls())
@@ -121,7 +124,20 @@ class GameScene:
 
         if self.pacman.power_up:
             for ghost in self.ghosts:
-                ghost.scare()
+                ghost.get_state().register_as_frightened()
+                ghost.fright()
+
+            State.change_to_fright()
+
+    def notify_out_of_frightened(self):
+        for ghost in self.ghosts:
+            if ghost.get_current_state() != State.DEAD:
+                ghost.restart_sprite()
+        self.pacman.power_up = False
+
+    def notify_dual_state_change(self):
+        for ghost in self.ghosts:
+            ghost.get_state().change_to_scatter_chase()
 
     def pacman_lose(self):
         return self.pacman.get_lives() <= 0
@@ -179,12 +195,15 @@ class GameScene:
 
     def update(self):
         self.pacman.move()
+
+        # print("Distance: ", self.map.get_distance(self.map.get_grid(self.pacman.get_pos()), (14, 14)))
         for ghost in self.ghosts:
             ghost.move()
 
+
         self.pacman.check_collision_pellets(self.map.get_pellets())
 
-        collided, eaten = self.pacman.check_collision_ghosts(self.ghosts)
+        collided, collided_ghosts = self.pacman.check_collision_ghosts(self.ghosts)
 
         if collided:
             if not self.pacman.power_up:
@@ -193,9 +212,10 @@ class GameScene:
                 for ghost in self.ghosts:
                     ghost.restart()
                 self.pacman.restart()
+                State.restart()
 
             else:
-                for ghost in eaten:
-                    ghost.eaten()
-                    self.score_value += ghost.get_score()
-
+                for ghost in collided_ghosts:
+                    if ghost.get_current_state() != State.DEAD:
+                        ghost.die()
+                        self.score_value += ghost.get_score()

@@ -52,6 +52,7 @@ class MovingActor(Actor):
         self.direction = constants.LEFT
 
     def set_spritesheet(self, path):
+        # print("Path: ", path)
         coord = []
         sprites_dim = constants.TILE_SIZE * 2
         for i in range(8):

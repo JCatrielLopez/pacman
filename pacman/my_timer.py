@@ -23,10 +23,12 @@ class MyTimer:
         if not self.on_pause:
             self.timer.cancel()
             self.end_time = time()
+            self.on_pause = True
 
     def resume(self):
-        self.timer = ThreadTimer(self.timeout - (self.end_time - self.startTime), self.func)
-        self.timer.start()
+        if self.on_pause:
+            self.timer = ThreadTimer(self.timeout - (self.end_time - self.startTime), self.func)
+            self.timer.start()
 
     def is_on_pause(self):
         return self.on_pause
@@ -36,3 +38,6 @@ class MyTimer:
 
     def cancel(self):
         self.timer.cancel()
+
+    def set_timeout(self, timeout):
+        self.timeout = timeout
