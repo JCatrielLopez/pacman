@@ -56,6 +56,8 @@ class GameScene:
             constants.TILE_SIZE,
             constants.TILE_SIZE,
             "../res/ghosts/Blinky",
+            "../res/ghosts/State_chase/Blinky",
+            "../res/ghosts/State_scatter/Blinky",
             self.pacman,
             self.map,
             self.characters,
@@ -156,10 +158,7 @@ class GameScene:
             State.change_to_fright()
 
     def notify_out_of_frightened(self):
-        for ghost in self.ghosts:
-            if ghost.get_current_state() != State.DEAD:
-                ghost.restart_sprite()
-        self.pacman.power_up = False
+        self.pacman.set_power_up(False)
 
     def notify_dual_state_change(self):
         for ghost in self.ghosts:
@@ -197,6 +196,7 @@ class GameScene:
     def terminate(self):
         self.finish = True
         self.display.clean()
+        State.terminate()
 
     def is_finish(self):
         return self.finish
@@ -237,7 +237,6 @@ class GameScene:
                 restart = False
                 for ghost in self.ghosts:
                     if ghost.get_current_state() != State.DEAD:
-                        ghost.restart_sprite()
                         ghost.restart_position()
                         ghost.restart_state()
                         restart = True
