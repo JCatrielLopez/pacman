@@ -228,4 +228,5 @@ class State:
     @staticmethod
     def terminate():
         State.dual_timer.cancel()
-        State.frightened_timer.cancel()
+        if State.frightened_timer is not None:
+            State.frightened_timer.cancel()
