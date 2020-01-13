@@ -15,6 +15,7 @@ class State:
     IN_HOME = 4
 
     frightened_register = []
+    in_home_register = []
 
     current_state = None
     dual_state = None
@@ -22,6 +23,9 @@ class State:
 
     frightened_timer: MyTimer = None
     frightened_timeout = 6
+
+    in_home_timer: MyTimer = None
+    in_home_timeout = 4
 
     scatter_time_list = [7.0, 7.0, 5.0, 5.0]
     chase_time_list = [20.0, 20.0, 20.0, 20.0]
@@ -41,6 +45,7 @@ class State:
 
         self.current_state = State.SCATTER
         self.next_dir_function = self.get_next_dir_scatter_chase
+        self.notify_in_home = None
         self.target_corner = (0, 0)
         self.target_position = (0, 0)
         if options is not None:
@@ -61,6 +66,9 @@ class State:
 
     def set_target_corner(self, target_corner):
         self.target_corner = target_corner
+
+    def set_notify_home(self, notify_function):
+        self.notify_in_home = notify_function
 
     def get_target_corner(self):
         return self.target_corner
@@ -137,10 +145,20 @@ class State:
             self.notify_state_change()
             self.next_dir_function = self.get_next_dir_dead
 
-    def change_to_home(self):
+    def register_as_in_home(self):
+        if self.current_state == State.DEAD:
+            if self not in State.in_home_register:
+                State.in_home_register.append(self)
+
+    def change_to_in_home(self):
         if self.current_state == State.DEAD:
             self.current_state = State.IN_HOME
+            print("IN HOME!")
+            self.notify_in_home()
             self.notify_state_change()
+            # State.in_home_timer = MyTimer(State.in_home_timeout, State.end_of_home_timeout)
+            # State.in_home_timer.start()
+
 
     def get_state(self):
         return self.current_state
