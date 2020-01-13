@@ -35,6 +35,7 @@ class State:
 
     notify_dual_state_change = None
     notify_out_of_frightened = None
+    notify_state_change = None
 
     def __init__(self, options):
 
@@ -75,6 +76,9 @@ class State:
     def set_notify_out_of_frightened(notify_out_of_frightened):
         State.notify_out_of_frightened = notify_out_of_frightened
 
+    def set_notify_state_change(self, notify_state_change):
+        self.notify_state_change = notify_state_change
+
     @staticmethod
     def switch_scatter_chase():
         # print("switch_scatter_chase: STATE: ", State.dual_state)
@@ -106,6 +110,7 @@ class State:
             State.dual_timer.pause()
             for state in State.frightened_register:
                 state.current_state = State.FRIGHTENED
+                state.notify_state_change()
                 state.next_dir_function = state.get_next_dir_frightened
             State.frightened_timer = MyTimer(State.frightened_timeout, State.end_of_fright_timeout)
             State.frightened_timer.start()
@@ -122,17 +127,20 @@ class State:
 
     def change_to_scatter_chase(self):
         self.current_state = State.dual_state
+        self.notify_state_change()
         self.next_dir_function = self.get_next_dir_scatter_chase
 
     def change_to_dead(self):
         if self.current_state == State.FRIGHTENED:
             State.frightened_register.remove(self)
             self.current_state = State.DEAD
+            self.notify_state_change()
             self.next_dir_function = self.get_next_dir_dead
 
     def change_to_home(self):
         if self.current_state == State.DEAD:
             self.current_state = State.IN_HOME
+            self.notify_state_change()
 
     def get_state(self):
         return self.current_state
@@ -198,3 +206,8 @@ class State:
 
     def back(self, current_dir):
         return -current_dir[0], -current_dir[1]
+
+    @staticmethod
+    def terminate():
+        State.dual_timer.cancel()
+        State.frightened_timer.cancel()
