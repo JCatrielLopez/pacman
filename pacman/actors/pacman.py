@@ -22,10 +22,13 @@ class Pacman(actor.MovingActor):
     notify_lives = None
     notify_pellets_in_map_change = None
 
+    spritesheet_path = "../res/pacman"
+    spritesheet_power_up_path = "../res/pacman_white"
+
     def __init__(self, x, y, width, height, current_map, notify_scores, notify_lives, notify_pellets_in_map_change,
                  *groups):
         super().__init__(
-            x, y, width, height, constants.YELLOW, "../res/pacman", current_map, *groups
+            x, y, width, height, constants.YELLOW, Pacman.spritesheet_path, current_map, *groups
         )
         self.notify_scores = notify_scores
         self.notify_lives = notify_lives
@@ -38,6 +41,7 @@ class Pacman(actor.MovingActor):
             for i in colliding:
                 if i.is_energizer():
                     self.power_up = True
+                    self.set_spritesheet(Pacman.spritesheet_power_up_path)
                 score += i.get_score()
                 pellet_list.remove(i)
 
@@ -74,3 +78,10 @@ class Pacman(actor.MovingActor):
 
     def set_lives(self, param):
         self.lives = param
+
+    def set_power_up(self, power_up):
+        self.power_up = power_up
+        if power_up:
+            self.set_spritesheet(Pacman.spritesheet_power_up_path)
+        else:
+            self.set_spritesheet(Pacman.spritesheet_path)
