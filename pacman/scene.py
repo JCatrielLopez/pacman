@@ -2,7 +2,7 @@ import pygame as pg
 
 from pacman.actors.state import State
 from . import map, constants
-from .actors import pacman, ghost, mode
+from .actors import pacman, ghost
 
 
 class GameScene:
@@ -15,6 +15,8 @@ class GameScene:
     lives_value = 0
     finish = None
     map_path = None
+    count_pellets = False
+    global_pellet_counter = 0
 
     def __init__(self, display, path):
         self.finish = False
@@ -23,7 +25,6 @@ class GameScene:
         self.score_text = "SCORE: 0"
         self.lives_text = "x"
         self.ghosts = []
-
 
         self.map_path = path
         self.map = map.Map(path)
@@ -118,15 +119,19 @@ class GameScene:
         if self.pacman.get_lives() <= 0:
             self.terminate()
 
-    def notify_pellets_in_map_change(self, remaining):
+    def notify_pellets_in_map_change(self, remaining, pellets_eaten):
         self.map.pellet_group = remaining
         self.check_level_completed()
 
-        if self.pacman.power_up:
-            for ghost in self.ghosts:
-                ghost.get_state().register_as_frightened()
-                ghost.fright()
+        for ghost in self.ghosts:
+            if ghost.get_current_state() != State.IN_HOME:
+                if self.pacman.power_up:
+                    ghost.get_state().register_as_frightened()
+                    ghost.fright()
+            else:
+                ghost.set_pellet_count(pellets_eaten)
 
+        if self.pacman.power_up:
             State.change_to_fright()
 
     def notify_out_of_frightened(self):
@@ -137,7 +142,8 @@ class GameScene:
 
     def notify_dual_state_change(self):
         for ghost in self.ghosts:
-            ghost.get_state().change_to_scatter_chase()
+            if ghost.get_current_state() != State.IN_HOME:
+                ghost.get_state().change_to_scatter_chase()
 
     def pacman_lose(self):
         return self.pacman.get_lives() <= 0
@@ -196,10 +202,8 @@ class GameScene:
     def update(self):
         self.pacman.move()
 
-        # print("Distance: ", self.map.get_distance(self.map.get_grid(self.pacman.get_pos()), (14, 14)))
         for ghost in self.ghosts:
             ghost.move()
-
 
         self.pacman.check_collision_pellets(self.map.get_pellets())
 
@@ -207,12 +211,19 @@ class GameScene:
 
         if collided:
             if not self.pacman.power_up:
-                self.pacman.decrement_lives()
-
+                restart = False
                 for ghost in self.ghosts:
-                    ghost.restart()
-                self.pacman.restart()
-                State.restart()
+                    if ghost.get_current_state() != State.DEAD:
+                        ghost.restart_sprite()
+                        ghost.restart_position()
+                        ghost.restart_state()
+                        ghost.toggle_pellet_count()
+                        restart = True
+                if restart:
+                    self.pacman.decrement_lives()
+                    self.pacman.restart_position()
+                    State.restart()
+
 
             else:
                 for ghost in collided_ghosts:

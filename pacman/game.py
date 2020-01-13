@@ -2,7 +2,7 @@ import pygame as pg
 
 import pacman.constants as constants
 import pacman.display as display
-import pacman.scene as scene
+from pacman import scene
 
 
 class Game:
@@ -33,6 +33,7 @@ class Game:
             cls.instance = super(Game, cls).__new__(cls)
         return cls.instance
 
+
     def run(self):
 
         quit_game = False
@@ -47,8 +48,7 @@ class Game:
 
                     if event.type == pg.QUIT or pg.key.get_pressed()[pg.K_ESCAPE]:
                         active_scene.terminate()
-                        quit_game = True;
-                        break;
+                        quit_game = True
 
                     if pg.key.get_pressed()[pg.K_r]:  # Reset
                         active_scene.terminate()
@@ -75,7 +75,7 @@ class Game:
                 self.clock.tick(constants.FPS)
 
             if quit_game or active_scene.pacman_lose():
-                break;
+                break
 
 
 def main(display):

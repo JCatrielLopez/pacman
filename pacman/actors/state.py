@@ -12,6 +12,7 @@ class State:
     CHASE = 1
     FRIGHTENED = 2
     DEAD = 3
+    IN_HOME = 4
 
     frightened_register = []
 
@@ -128,6 +129,10 @@ class State:
             State.frightened_register.remove(self)
             self.current_state = State.DEAD
             self.next_dir_function = self.get_next_dir_dead
+
+    def change_to_home(self):
+        if self.current_state == State.DEAD:
+            self.current_state = State.IN_HOME
 
     def get_state(self):
         return self.current_state

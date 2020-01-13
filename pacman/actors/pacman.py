@@ -43,7 +43,7 @@ class Pacman(actor.MovingActor):
 
             self.pellets_consumed += len(colliding)
             self.add_score(score)
-            self.notify_pellets_in_map_change(pellet_list)
+            self.notify_pellets_in_map_change(pellet_list, len(colliding))
 
     def check_collision_ghosts(self, ghosts_hitboxes):
         hits = []

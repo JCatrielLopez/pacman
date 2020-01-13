@@ -1,7 +1,7 @@
 import numpy as np
 
 from pacman.actors.state import State
-from . import actor, mode
+from . import actor
 from .. import constants
 
 
@@ -23,6 +23,10 @@ class Ghost(actor.MovingActor):
         self.resources_path = res_path
         self.pacman = pacman
         self.home_position = (0, 0)
+        self.pellets_counted = 0
+        self.pellet_limit = 0
+        self.global_pellet_limit = 0
+        self.count_pellets = True
 
         self.color = constants.RED
 
@@ -53,16 +57,43 @@ class Ghost(actor.MovingActor):
     def get_score(self):
         return self.score
 
-    def restart(self):
-        super().restart()
+    def restart_state(self):
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
-        self.restart_sprite()
 
-    def tp(self):
-        self.rect.x = self.home_position[0]
-        self.rect.y = self.home_position[1]
+    def tp(self, new_location):
+        self.rect.x = new_location[0]
+        self.rect.y = new_location[1]
         self.direction = constants.LEFT
+
+    def move(self):
+        if self.get_current_state() == State.DEAD:
+            current_position = self.current_map.get_grid(self.get_pos())
+            target = self.current_map.get_grid(self.home_door_position)
+            distance = self.current_map.get_distance(current_position, target)
+
+            if distance < 3:
+                self.tp(self.home_position)
+                self.state.change_to_home()
+                self.restart_sprite()
+            else:
+                super().move()
+        elif self.get_current_state() != State.IN_HOME:
+            super().move()
+
+    def set_pellet_count(self, amount):
+        if self.get_current_state() == State.IN_HOME:
+            self.pellets_counted += amount
+            self.check_pellet_limits()
+
+    def check_pellet_limits(self):
+        if self.pellets_counted > self.pellet_limit:
+            self.tp(self.home_door_position)
+            self.pellets_counted = 0
+            self.state.change_to_scatter_chase()
+
+    def toggle_pellet_count(self):
+        self.count_pellets = not self.count_pellets
 
 
 class Blinky(Ghost):
@@ -78,6 +109,7 @@ class Blinky(Ghost):
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.pellet_limit = 0
 
     def move(self):
         self.state.set_target_position(self.pacman.get_pos())
@@ -100,6 +132,8 @@ class Pinky(Ghost):
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.pellet_limit = 0
+        self.global_pellet_limit = 7
 
     def move(self):
         # self.check_mode()
@@ -131,6 +165,8 @@ class Inky(Ghost):
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.pellet_limit = 30
+        self.global_pellet_limit = 17
 
     def move(self):
         pacman_position = self.pacman.get_pos()
@@ -168,6 +204,7 @@ class Clyde(Ghost):
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.pellet_limit = 60
 
     def move(self):
         # self.check_mode()
@@ -184,3 +221,4 @@ class Clyde(Ghost):
             self.get_pos(), self.back(self.direction), self.current_map
         )
         super().move()
+

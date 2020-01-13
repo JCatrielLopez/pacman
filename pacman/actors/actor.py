@@ -46,7 +46,7 @@ class MovingActor(Actor):
 
         self.current_map = current_map
 
-    def restart(self):
+    def restart_position(self):
         self.rect.x = self.original_x
         self.rect.y = self.original_y
         self.direction = constants.LEFT
