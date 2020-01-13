@@ -27,7 +27,7 @@ class Pellet(actor.Actor):
                     constants.TILE_SIZE,
                 )
             )
-            self.score = 10
+            self.score = 50
         else:
             super().__init__(x, y, width, height, constants.LIGHT_GRAY, *groups)
             self.sprite = sp_pellets.image_at(
@@ -38,7 +38,7 @@ class Pellet(actor.Actor):
                     constants.TILE_SIZE,
                 )
             )
-            self.score = 30
+            self.score = 10
 
     def get_sprite(self):
         return self.sprite
