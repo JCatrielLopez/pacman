@@ -33,7 +33,6 @@ class Game:
             cls.instance = super(Game, cls).__new__(cls)
         return cls.instance
 
-
     def run(self):
 
         quit_game = False

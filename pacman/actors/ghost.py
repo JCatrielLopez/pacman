@@ -122,8 +122,16 @@ class Ghost(actor.MovingActor):
 
         elif self.get_current_state() == State.FRIGHTENED:
             self.set_spritesheet(self.spritesheet_frightened_path)
-        else:
+
+        elif self.state.get_state() == State.IN_HOME:
             self.set_spritesheet(self.spritesheet_path)
+
+    def can_be_fright(self):
+        return self.state.can_be_fright()
+
+    def set_state(self, st):
+        self.state.update_state(st)
+        self.notify_state_change()
 
 
 class Blinky(Ghost):

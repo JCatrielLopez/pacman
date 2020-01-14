@@ -234,6 +234,38 @@ class State:
     def back(self, current_dir):
         return -current_dir[0], -current_dir[1]
 
+    def update_state(self, st):
+        self.current_state = st
+        self.update_next_dir_function()
+
+    def update_next_dir_function(self):
+        if self.current_state == State.SCATTER:
+            self.next_dir_function = self.get_next_dir_scatter_chase
+
+        if self.current_state == State.CHASE:
+            self.next_dir_function = self.get_next_dir_scatter_chase
+
+        if self.current_state == State.DEAD:
+            self.next_dir_function = self.get_next_dir_dead
+
+        if self.current_state == State.FRIGHTENED:
+            self.next_dir_function = self.get_next_dir_frightened
+
+        if self.current_state == State.IN_HOME:
+            self.next_dir_function = None  # TODO Estamos seguros de esto?
+
+    def can_be_fright(self):
+        if self.current_state == State.SCATTER:
+            return True
+
+        if self.current_state == State.CHASE:
+            return True
+
+        if self.current_state == State.FRIGHTENED:
+            return True
+
+        return False
+
     @staticmethod
     def terminate():
         State.dual_timer.cancel()
