@@ -39,11 +39,11 @@ class Ghost(actor.MovingActor):
     def back(self, current_dir):
         return -current_dir[0], -current_dir[1]
 
-    def die(self):
-        if self.get_current_state() != State.DEAD:
-            self.state.change_to_dead()
-            self.image.fill(constants.GREEN)
-            self.set_spritesheet(self.spritesheet_dead_path)
+    # def die(self):
+    #     if self.get_current_state() != State.DEAD:
+    #         self.state.change_to_dead()
+    #         self.image.fill(constants.GREEN)
+    #         self.set_spritesheet(self.spritesheet_dead_path)
 
     def get_state(self):
         return self.state
@@ -63,7 +63,6 @@ class Ghost(actor.MovingActor):
         self.state = State(self.options)
         self.state.set_notify_state_change(self.notify_state_change)
         self.state.set_target_corner(self.target_corner)
-        self.state.set_notify_home(self.notify_in_home)
         self.notify_state_change()
 
     def tp(self, new_location):
@@ -79,17 +78,21 @@ class Ghost(actor.MovingActor):
 
             if distance < 2:
                 self.tp(self.home_position)
-                self.state.change_to_in_home()
+                self.state.register_as_in_home()
+                State.change_to_in_home()  # TODO Cambiar esto de lugar
             else:
                 super().move()
         elif self.get_current_state() != State.IN_HOME:
             super().move()
 
     def set_pellet_count(self, amount):
-        if self.get_current_state() == State.IN_HOME and self.count_pellets:
-            self.pellet_counter += amount
-            self.check_pellet_limits()
+        if self.get_current_state() == State.IN_HOME:
+            self.state.add_pellets_counted(amount)
 
+    def get_counter(self):
+        return self.state.get_pellets_counted()
+
+    # TODO
     def check_pellet_limits(self):
         if self.count_pellets:
             if self.pellet_counter > self.pellet_limit:
@@ -100,31 +103,27 @@ class Ghost(actor.MovingActor):
                 self.tp(self.home_door_position)
                 self.state.change_to_scatter_chase()
 
-    def set_count_pellets(self, value):
-        self.count_pellets = value
-
-    def notify_in_home(self):
-        self.count_pellets = True
-
-    def activate_pellet_counter(self, value):
-        self.count_pellets = value
-
-    def get_counter(self):
-        return self.pellet_counter
+    def die(self):
+        if self.get_current_state() != State.DEAD and self.get_current_state() != State.IN_HOME:
+            self.state.change_to_dead()
+            self.image.fill(constants.GREEN)
+            self.set_spritesheet(self.spritesheet_dead_path)
 
     def notify_state_change(self):
 
-        if self.state.get_state() == State.SCATTER:
+        if self.get_current_state() == State.SCATTER:
             self.set_spritesheet(self.spritesheet_scatter_path)
 
-        if self.state.get_state() == State.CHASE:
+        elif self.get_current_state() == State.CHASE:
             self.set_spritesheet(self.spritesheet_chase_path)
 
-        if self.state.get_state() == State.DEAD:
+        elif self.get_current_state() == State.DEAD:
             self.set_spritesheet(self.spritesheet_dead_path)
 
-        if self.state.get_state() == State.FRIGHTENED:
+        elif self.get_current_state() == State.FRIGHTENED:
             self.set_spritesheet(self.spritesheet_frightened_path)
+        else:
+            self.set_spritesheet(self.spritesheet_path)
 
 
 class Blinky(Ghost):
@@ -142,7 +141,6 @@ class Blinky(Ghost):
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
-        self.state.set_notify_home(self.notify_in_home)
         self.pellet_limit = 0
         self.global_pellet_limit = 0
 
@@ -172,7 +170,6 @@ class Pinky(Ghost):
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
-        self.state.set_notify_home(self.notify_in_home)
         self.pellet_limit = 0
         self.global_pellet_limit = 7
 
@@ -211,7 +208,6 @@ class Inky(Ghost):
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
-        self.state.set_notify_home(self.notify_in_home)
         self.pellet_limit = 30
         self.global_pellet_limit = 17
 
@@ -256,7 +252,6 @@ class Clyde(Ghost):
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
-        self.state.set_notify_home(self.notify_in_home)
         self.pellet_limit = 60
         self.global_pellet_limit = 32
 
@@ -265,6 +260,7 @@ class Clyde(Ghost):
 
     def move(self):
 
+        # print(f"{self.name}:: State: {self.get_current_state()}")
         pacman_grid = self.current_map.get_grid(self.pacman.get_pos())
         clyde_grid = self.current_map.get_grid(self.get_pos())
 

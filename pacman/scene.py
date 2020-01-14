@@ -141,6 +141,7 @@ class GameScene:
         self.lives_text = f"x{self.pacman.get_lives()}"
         if self.pacman.get_lives() <= 0:
             self.terminate()
+            State.terminate()
 
     def notify_pellets_in_map_change(self, remaining, pellets_eaten):
         self.map.pellet_group = remaining
@@ -150,18 +151,18 @@ class GameScene:
             self.global_pellet_counter += pellets_eaten
 
         for ghost in self.ghosts:
-            if ghost.get_current_state() != State.IN_HOME:
-                if self.pacman.power_up:
-                    ghost.get_state().register_as_frightened()
-                    ghost.fright()
-            else:
-                if self.count_pellets:
-                    ghost.set_pellet_count(self.global_pellet_counter)
-                else:
-                    ghost.set_pellet_count(pellets_eaten)
+            if self.pacman.power_up:
+                ghost.get_state().register_as_frightened()
+                ghost.fright()
+
+            if not self.count_pellets:
+                ghost.set_pellet_count(pellets_eaten)
 
         if self.pacman.power_up:
             State.change_to_fright()
+
+        if self.count_pellets:
+            self.global_pellet_counter += pellets_eaten
 
     def notify_out_of_frightened(self):
         self.pacman.set_power_up(False)
@@ -256,15 +257,13 @@ class GameScene:
                         self.count_pellets = True
 
                         for ghost in self.ghosts:
-                            ghost.set_count_pellets(False)
+                            ghost.get_state().set_count_pellets(False)
                     else:
                         self.global_pellet_counter = 0
                         self.global_pellets_text = f"CG: {self.global_pellet_counter}"
-
-
-
             else:
                 for ghost in collided_ghosts:
-                    if ghost.get_current_state() != State.DEAD:
+                    current_state = ghost.get_current_state()
+                    if current_state != State.DEAD and current_state != State.IN_HOME:
                         ghost.die()
                         self.score_value += ghost.get_score()

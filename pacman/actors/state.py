@@ -45,9 +45,11 @@ class State:
 
         self.current_state = State.SCATTER
         self.next_dir_function = self.get_next_dir_scatter_chase
-        self.notify_in_home = None
         self.target_corner = (0, 0)
         self.target_position = (0, 0)
+        self.count_pellets = True
+        self.pellets_counted = 0
+
         if options is not None:
             self.options = options
 
@@ -55,6 +57,15 @@ class State:
             State.dual_state = State.SCATTER
             State.dual_timer = MyTimer(State.scatter_time_list[State.dual_time_index], State.switch_scatter_chase)
             State.dual_timer.start()
+
+    def set_count_pellets(self, value):
+        self.count_pellets = value
+
+    def get_pellets_counted(self):
+        return self.pellets_counted
+
+    def add_pellets_counted(self, amount):
+        self.pellets_counted += amount
 
     @staticmethod
     def restart():
@@ -66,9 +77,6 @@ class State:
 
     def set_target_corner(self, target_corner):
         self.target_corner = target_corner
-
-    def set_notify_home(self, notify_function):
-        self.notify_in_home = notify_function
 
     def get_target_corner(self):
         return self.target_corner
@@ -89,7 +97,6 @@ class State:
 
     @staticmethod
     def switch_scatter_chase():
-        # print("switch_scatter_chase: STATE: ", State.dual_state)
         if State.dual_state == State.SCATTER:
             State.dual_state = State.CHASE
             State.dual_timer.cancel()
@@ -107,7 +114,7 @@ class State:
         State.dual_timer.start()
 
     def register_as_frightened(self):
-        if self.current_state != State.DEAD:
+        if self.current_state != State.DEAD and self.current_state != State.IN_HOME:
             if self not in State.frightened_register:
                 State.frightened_register.append(self)
 
@@ -128,7 +135,8 @@ class State:
         State.frightened_timer.cancel()
         State.dual_timer.resume()
         for state in State.frightened_register:
-            state.change_to_scatter_chase()
+            if state.current_state != State.DEAD or state.current_state != State.IN_HOME:
+                state.change_to_scatter_chase()
 
         State.frightened_register.clear()
         State.notify_out_of_frightened()
@@ -150,15 +158,13 @@ class State:
             if self not in State.in_home_register:
                 State.in_home_register.append(self)
 
-    def change_to_in_home(self):
-        if self.current_state == State.DEAD:
-            self.current_state = State.IN_HOME
-            print("IN HOME!")
-            self.notify_in_home()
-            self.notify_state_change()
-            # State.in_home_timer = MyTimer(State.in_home_timeout, State.end_of_home_timeout)
-            # State.in_home_timer.start()
-
+    @staticmethod
+    def change_to_in_home():
+        print(State.in_home_register)
+        for state in State.in_home_register:
+            state.current_state = State.IN_HOME
+            state.notify_state_change()
+            state.next_dir_function = state.get_next_dir_scatter_chase
 
     def get_state(self):
         return self.current_state
@@ -200,8 +206,11 @@ class State:
         if len(valid_options) == 2 and self.back(valid_options[0]) == valid_options[1]:
             return None
 
-        opt = random.choice(valid_options)
-        return opt
+        if valid_options:
+            opt = random.choice(valid_options)
+            return opt
+        else:
+            return None
 
     def get_next_dir_dead(self, current_position, back, map):
         current_grid = map.get_grid(current_position)
