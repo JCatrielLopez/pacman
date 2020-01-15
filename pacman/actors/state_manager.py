@@ -1,13 +1,15 @@
 from pacman.actors.state import State
 from pacman.my_timer import MyTimer
+import logging
 
+logger = logging.getLogger()
 
 # TODO Si necesitan saber donde se llamo una funcion, pongan este pedazo de codigo en esa funcion:
-# print("---------------------------------------------------------------------------------------------------------")
+# logging.debug("---------------------------------------------------------------------------------------------------------")
 # import traceback
 # for line in traceback.format_stack():
 #     print(line.strip())
-# print("---------------------------------------------------------------------------------------------------------")
+# logging.debug("---------------------------------------------------------------------------------------------------------")
 
 class StateManager:
     BLINKY_INDEX = 0
@@ -49,9 +51,7 @@ class StateManager:
         self.pellet_global_counter = False
 
         self.last_pellet_timeout = 4
-        self.last_pellet_timer = MyTimer(
-            self.last_pellet_timeout, self.resurrect_by_timer
-        )
+        self.last_pellet_timer = None
 
     def set_ghosts(self, ghosts):
         # Los arreglos en Python no tienen un orden asegurado, asi que la ordeno cuando la seteo por prioridad.
@@ -83,24 +83,29 @@ class StateManager:
         self.dual_timer.start()
 
     def change_to_frightened(self):
-        if not self.dual_timer.is_on_pause():
-            self.dual_timer.pause()
-            for ghost in self.ghosts:
-                if ghost.can_be_frightened():
-                    ghost.set_state(State.FRIGHTENED)
+        self.dual_timer.pause()
+        for ghost in self.ghosts:
+            if ghost.can_be_frightened():
+                ghost.set_state(State.FRIGHTENED)
 
-            self.frightened_timer = MyTimer(
-                self.frightened_timeout, self.end_of_fright_timeout
-            )
-            self.frightened_timer.start()
+        if self.frightened_timer is not None:
+            self.frightened_timer.cancel()
+        self.frightened_timer = MyTimer(
+            self.frightened_timeout, self.end_of_fright_timeout
+        )
+        self.frightened_timer.start()
 
     def end_of_fright_timeout(self):
-        self.frightened_timer.cancel()
-        self.dual_timer.resume()
-        for ghost in self.ghosts:
-            if ghost.get_current_state() == State.FRIGHTENED:
-                ghost.set_state(self.dual_state)
-        self.notify_pacman(self.notify_pacman_arg)
+
+        if self.frightened_timer is not None:
+            self.frightened_timer.cancel()
+            self.dual_timer.resume()
+
+            for ghost in self.ghosts:
+                if ghost.get_current_state() == State.FRIGHTENED:
+                    ghost.set_state(self.dual_state)
+
+            self.notify_pacman(self.notify_pacman_arg)
 
     def change_to_dead(self, ghost):
         if ghost.get_current_state() == State.FRIGHTENED:
@@ -110,16 +115,31 @@ class StateManager:
         if ghost.get_current_state() == State.DEAD:
             ghost.set_state(State.IN_HOME)
 
-            if self.last_pellet_timer.is_on_pause():
+            if self.last_pellet_timer is None:
+                logger.debug("Creo LAST PELLET TIMER")
+                self.last_pellet_timer = MyTimer(
+                    self.last_pellet_timeout, self.resurrect_by_timer
+                )
                 self.last_pellet_timer.start()
+
+    def reset_last_pellet_timer(self):
+
+        if self.last_pellet_timer is not None:
+            self.last_pellet_timer.cancel()
+            self.last_pellet_timer = MyTimer(
+                self.last_pellet_timeout, self.resurrect_by_timer
+            )
+            self.last_pellet_timer.start()
 
     def resurrect_by_timer(self):
         for index in range(0, len(self.ghosts)):
             if self.ghosts[index].get_current_state() == State.IN_HOME:
                 self.ghosts[index].set_state(self.dual_state)
+                logger.debug(f"{self.ghosts[index].name} resurrected by timer!")
                 return True
 
         self.last_pellet_timer.cancel()
+        self.last_pellet_timer = None
         return False
 
     def resurrect_by_limit(self, index):
@@ -129,6 +149,7 @@ class StateManager:
                     >= self.pellet_ghost_counter_limits[index]
             ):
                 self.ghosts[index].set_state(self.dual_state)
+                logger.debug(f"{self.ghosts[index].name} resurrected by local limit!")
                 return True
         return False
 
@@ -147,9 +168,11 @@ class StateManager:
                         == self.pellet_global_counter_limits[index]
                 ):
                     self.ghosts[index].set_state(self.dual_state)
+                    logger.debug(f"{self.ghosts[index].name} resurrected by global limit!")
                     return True
 
-        self.last_pellet_timer.cancel()
+        if self.last_pellet_timer is not None:
+            self.last_pellet_timer.cancel()
         return False
 
     def set_global_counter(self, value):
@@ -162,21 +185,6 @@ class StateManager:
 
     def activate_time_limit(self):
         self.last_pellet_timer.start()
-
-    def update_pellet_counter_values(self, amount):
-        if self.pellet_ghost_counter:
-
-            for index in range(0, len(self.ghosts)):
-                if self.ghosts[index].get_current_state() == State.IN_HOME:
-                    self.pellet_ghost_counter_values[index] += amount
-                    self.resurrect_by_limit(index)
-                    return True
-        return False
-
-    def update_pellet_global_counter(self, amount):
-        if self.pellet_global_counter:
-            self.pellet_global_counter_value += amount
-            self.resurrect_by_global_limit()
 
     def check_collision(self, ghost_collided):
         for ghost in ghost_collided:
@@ -194,6 +202,14 @@ class StateManager:
         for ghost in self.ghosts:
             ghost.set_state(self.dual_state)
 
+        self.pellet_ghost_counter_values = [0, 0, 0, 0]
+        self.pellet_global_counter_value = 0
+        self.pellet_global_counter = False
+
+        if self.last_pellet_timer is not None:
+            self.last_pellet_timer.cancel()
+            self.last_pellet_timer = None
+
     def terminate(self):
         if self.frightened_timer is not None:
             self.frightened_timer.cancel()
@@ -207,3 +223,24 @@ class StateManager:
 
     def get_pellet_counter_value(self):
         return str(self.pellet_ghost_counter_values)
+
+    def update_pellet_ghost_counter(self, value):
+        self.pellet_ghost_counter = value
+
+    def update_pellet_global_counter(self, value):
+        self.pellet_global_counter = value
+
+    def update_pellet_ghost_counter_values(self, amount):
+        if self.pellet_ghost_counter:
+
+            for index in range(0, len(self.ghosts)):
+                if self.ghosts[index].get_current_state() == State.IN_HOME:
+                    self.pellet_ghost_counter_values[index] += amount
+                    self.resurrect_by_limit(index)
+                    return True
+        return False
+
+    def update_pellet_global_counter_values(self, amount):
+        if self.pellet_global_counter:
+            self.pellet_global_counter_value += amount
+            self.resurrect_by_global_limit()

@@ -152,7 +152,5 @@ class State:
     def set_notify_teleport(self, function):
         self.notify_teleport = function
 
-    # TODO Cuesta replicarlo, pero a veces esto es None ????????
     def notify(self, ghost):
-        print(f"{self.notify_teleport} -> {ghost}")
         self.notify_teleport(ghost)

@@ -2,7 +2,7 @@ import pygame as pg
 
 from . import map, constants
 from .actors import pacman, ghost
-from .state_manager import StateManager
+from pacman.actors.state_manager import StateManager
 
 
 class GameScene:
@@ -128,9 +128,9 @@ class GameScene:
         self.map.pellet_group = remaining
         self.is_level_done()
 
-        self.state_manager.update_pellet_global_counter(pellets_eaten)
-        self.state_manager.update_pellet_counter_values(pellets_eaten)
-
+        self.state_manager.update_pellet_global_counter_values(pellets_eaten)
+        self.state_manager.update_pellet_ghost_counter_values(pellets_eaten)
+        self.state_manager.reset_last_pellet_timer()
         if ate_an_energizer:
             self.state_manager.change_to_frightened()
 
@@ -187,6 +187,10 @@ class GameScene:
                 if not (ghost.can_be_consumed() or ghost.can_be_ignored()):
                     self.pacman.decrement_lives()
                     self.restart()
+
+                    if self.pacman.get_lives() < 3:
+                        self.state_manager.update_pellet_global_counter(True)
+                        self.state_manager.update_pellet_ghost_counter(False)
 
             self.state_manager.check_collision(ghosts_collided)
 

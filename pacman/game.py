@@ -1,9 +1,13 @@
 import pygame as pg
-
+import logging
 import pacman.constants as constants
 import pacman.display as display
 from pacman import scene
 
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(module)s:%(threadName)s:%(message)s")  # level=10
+
+logger = logging.getLogger(name=None)
 
 class Game:
     clock = None
@@ -15,6 +19,7 @@ class Game:
     display = None
 
     def __init__(self, display):
+
         self.clock = pg.time.Clock()
         self.display = display
         self.scenes_path = [
@@ -34,12 +39,12 @@ class Game:
         return cls.instance
 
     def run(self):
-
         quit_game = False
         for scene_path in self.scenes_path:
             active_scene = scene.GameScene(self.display, scene_path)
+
             active_scene.init_scene()
-            print(f"Active scene: {active_scene}")
+            logger.debug(f"Active scene: {active_scene}")
 
             while not active_scene.is_finish():
                 filtered_events = []
@@ -66,6 +71,9 @@ class Game:
                         filtered_events.append(event)
                     if pg.key.get_pressed()[pg.K_DOWN]:
                         filtered_events.append(event)
+                    if pg.key.get_pressed()[pg.K_f]:
+                        filtered_events.append(event)
+
 
                 active_scene.process_input(filtered_events)
 

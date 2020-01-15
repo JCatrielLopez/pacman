@@ -4,6 +4,8 @@ from pacman.actors.state import State
 from . import actor
 from .. import constants
 
+from threading import Lock
+
 
 class Ghost(actor.MovingActor):
     # TODO agregar comer fantasmas y que vuelvan a la casa - que inicien en la casa
@@ -11,6 +13,8 @@ class Ghost(actor.MovingActor):
     score = 800
     state = None
     home_door_position = (216, 176)
+
+    threadLock = Lock()
 
     def __init__(
             self,
@@ -103,16 +107,15 @@ class Ghost(actor.MovingActor):
     def can_be_ignored(self):
         return self.state.can_be_ignored()
 
+    # TODO Creo que hace falta un lock aca. Podes comerte un energizer justo cuando salen de asustarse.
     def set_state(self, st):
+        self.threadLock.acquire(blocking=True)
         if self.state.current_state == State.IN_HOME:
-            import traceback
-            for line in traceback.format_stack():
-                print(line.strip())
             self.teleport(self.home_door_position)
 
-        # print(f"{self.name} -> {st}")
         self.state.update_state(st)
         self.update_spritesheet()
+        self.threadLock.release()
 
 
 class Blinky(Ghost):
