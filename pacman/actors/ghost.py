@@ -1,10 +1,10 @@
+from threading import Lock
+
 import numpy as np
 
 from pacman.actors.state import State
 from . import actor
 from .. import constants
-
-from threading import Lock
 
 
 class Ghost(actor.MovingActor):
@@ -121,8 +121,6 @@ class Ghost(actor.MovingActor):
 class Blinky(Ghost):
     def __init__(
             self,
-            x=None,
-            y=None,
             width=None,
             height=None,
             spritesheet_path=None,
@@ -133,9 +131,10 @@ class Blinky(Ghost):
             map=None,
             groups=None
     ):
+        self.home_position = Ghost.home_door_position
         super().__init__(
-            x=x,
-            y=y,
+            x=self.home_position[0],
+            y=self.home_position[1],
             width=width,
             height=height,
             spritesheet_path=spritesheet_path,
@@ -151,11 +150,12 @@ class Blinky(Ghost):
         self.name = "Blinky"
 
         self.target_corner = (416, 64)
-        self.home_position = Ghost.home_door_position
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
         self.state.set_notify_teleport(notify_in_home)
+
+        self.set_state(State.SCATTER)
         self.pellet_limit = 0
         self.global_pellet_limit = 0
 
@@ -174,8 +174,6 @@ class Blinky(Ghost):
 class Pinky(Ghost):
     def __init__(
             self,
-            x=None,
-            y=None,
             width=None,
             height=None,
             spritesheet_path=None,
@@ -186,9 +184,10 @@ class Pinky(Ghost):
             map=None,
             groups=None
     ):
+        self.home_position = (216, 224)
         super().__init__(
-            x=x,
-            y=y,
+            x=self.home_position[0],
+            y=self.home_position[1],
             width=width,
             height=height,
             spritesheet_path=spritesheet_path,
@@ -204,7 +203,6 @@ class Pinky(Ghost):
         self.name = "Pinky"
 
         self.target_corner = (16, 64)
-        self.home_position = (216, 224)
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
@@ -236,8 +234,6 @@ class Pinky(Ghost):
 class Inky(Ghost):
     def __init__(
             self,
-            x=None,
-            y=None,
             width=None,
             height=None,
             spritesheet_path=None,
@@ -249,9 +245,10 @@ class Inky(Ghost):
             map=None,
             groups=None
     ):
+        self.home_position = (184, 224)
         super().__init__(
-            x=x,
-            y=y,
+            x=self.home_position[0],
+            y=self.home_position[1],
             width=width,
             height=height,
             spritesheet_path=spritesheet_path,
@@ -268,7 +265,6 @@ class Inky(Ghost):
         self.blinky = blinky
 
         self.target_corner = (416, 464)
-        self.home_position = (184, 224)
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
@@ -310,8 +306,6 @@ class Inky(Ghost):
 class Clyde(Ghost):
     def __init__(
             self,
-            x=None,
-            y=None,
             width=None,
             height=None,
             spritesheet_path=None,
@@ -322,9 +316,10 @@ class Clyde(Ghost):
             map=None,
             groups=None
     ):
+        self.home_position = (248, 224)
         super().__init__(
-            x=x,
-            y=y,
+            x=self.home_position[0],
+            y=self.home_position[1],
             width=width,
             height=height,
             spritesheet_path=spritesheet_path,
@@ -339,7 +334,6 @@ class Clyde(Ghost):
         self.name = "Clyde"
 
         self.target_corner = (16, 464)
-        self.home_position = (248, 224)
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)

@@ -15,7 +15,7 @@ class Display:
     groups = None
 
     def __init__(self, size):
-        self.surface = pg.display.set_mode(size, pg.FULLSCREEN)
+        self.surface = pg.display.set_mode(size)
 
         self.bg_color = constants.BLACK
 

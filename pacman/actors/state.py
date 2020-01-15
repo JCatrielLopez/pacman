@@ -21,7 +21,7 @@ class State:
 
     def __init__(self, options):
 
-        self.current_state = State.SCATTER
+        self.current_state = State.IN_HOME
         self.next_dir_function = self.get_next_dir_scatter_chase
         self.target_corner = (0, 0)
         self.target_position = (0, 0)

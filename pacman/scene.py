@@ -1,8 +1,8 @@
 import pygame as pg
 
+from pacman.actors.state_manager import StateManager
 from . import map, constants
 from .actors import pacman, ghost
-from pacman.actors.state_manager import StateManager
 
 
 class GameScene:
@@ -45,8 +45,6 @@ class GameScene:
         )
 
         self.blinky = ghost.Blinky(
-            x=216,
-            y=176,
             width=constants.TILE_SIZE,
             height=constants.TILE_SIZE,
             spritesheet_path="../res/ghosts/Blinky",
@@ -60,8 +58,6 @@ class GameScene:
         self.ghosts.append(self.blinky)
 
         self.pinky = ghost.Pinky(
-            x=206,
-            y=176,
             width=constants.TILE_SIZE,
             height=constants.TILE_SIZE,
             spritesheet_path="../res/ghosts/Pinky",
@@ -75,8 +71,6 @@ class GameScene:
         self.ghosts.append(self.pinky)
 
         self.inky = ghost.Inky(
-            x=206,
-            y=176,
             width=constants.TILE_SIZE,
             height=constants.TILE_SIZE,
             spritesheet_path="../res/ghosts/Inky",
@@ -91,8 +85,6 @@ class GameScene:
         self.ghosts.append(self.inky)
 
         self.clyde = ghost.Clyde(
-            x=206,
-            y=176,
             width=constants.TILE_SIZE,
             height=constants.TILE_SIZE,
             spritesheet_path="../res/ghosts/Clide",
