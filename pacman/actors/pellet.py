@@ -13,9 +13,7 @@ class Pellet(actor.Actor):
     def __init__(self, x, y, width, height, energizer, index, *groups):
         self.energizer = energizer
 
-        sp_pellets = spritesheet.Spritesheet(
-            "../res/map/Dots.png"
-        )
+        sp_pellets = spritesheet.Spritesheet("../res/map/Dots.png")
 
         if self.energizer:
             super().__init__(x, y, width, height, constants.WHITE, *groups)

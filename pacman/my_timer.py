@@ -27,7 +27,9 @@ class MyTimer:
 
     def resume(self):
         if self.on_pause:
-            self.timer = ThreadTimer(self.timeout - (self.end_time - self.startTime), self.func)
+            self.timer = ThreadTimer(
+                self.timeout - (self.end_time - self.startTime), self.func
+            )
             self.timer.start()
 
     def is_on_pause(self):

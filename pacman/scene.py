@@ -1,8 +1,8 @@
 import pygame as pg
 
-from pacman.actors.state import State
 from . import map, constants
 from .actors import pacman, ghost
+from .state_manager import StateManager
 
 
 class GameScene:
@@ -12,111 +12,104 @@ class GameScene:
     ghosts = None
     high_score_value = 0
     score_value = 0
-    lives_value = 0
     finish = None
     map_path = None
-    count_pellets = False
-    global_pellet_counter = 0
 
     def __init__(self, display, path):
         self.finish = False
         self.display = display
         self.high_score_text = "HIGH SCORE: 0"
         self.score_text = "SCORE: 0"
-        self.lives_text = "x"
+        self.lives_text = "x3"
         self.global_pellets_text = "CONT_GLOBAL: 0"
-        self.blinky_counter = "CONT_BLINKY: 0"
-        self.pinky_counter = "CONT_PINKY: 0"
-        self.inky_counter = "CONT_INKY: 0"
-        self.clyde_counter = "CONT_CLYDE: 0"
+        self.ghost_counter = "CONT_GHOSTS: []"
         self.ghosts = []
 
         self.map_path = path
         self.map = map.Map(path)
-        print("Scene: ", self.map)
 
         self.characters = pg.sprite.Group()
+        self.state_manager = StateManager()
+
+        # TODO Revisar pacman
         self.pacman = pacman.Pacman(
             216,
             272,
             constants.TILE_SIZE,
             constants.TILE_SIZE,
             self.map,
-            self.notify_scores,
+            self.update_texts,
             self.notify_lives,
             self.notify_pellets_in_map_change,
-            self.characters,
+            self.characters
         )
 
-        self.notify_lives()
-
         self.blinky = ghost.Blinky(
-            216,
-            176,
-            constants.TILE_SIZE,
-            constants.TILE_SIZE,
-            "../res/ghosts/Blinky",
-            "../res/ghosts/State_chase/Blinky",
-            "../res/ghosts/State_scatter/Blinky",
-            self.pacman,
-            self.map,
-            self.characters,
+            x=216,
+            y=176,
+            width=constants.TILE_SIZE,
+            height=constants.TILE_SIZE,
+            spritesheet_path="../res/ghosts/Blinky",
+            spritesheet_chase_path="../res/ghosts/State_chase/Blinky",
+            spritesheet_scatter_path="../res/ghosts/State_scatter/Blinky",
+            notify_in_home=self.state_manager.change_to_in_home,
+            pacman=self.pacman,
+            map=self.map,
+            groups=tuple()
         )
         self.ghosts.append(self.blinky)
 
         self.pinky = ghost.Pinky(
-            206,
-            176,
-            constants.TILE_SIZE,
-            constants.TILE_SIZE,
-            "../res/ghosts/Pinky",
-            "../res/ghosts/State_chase/Pinky",
-            "../res/ghosts/State_scatter/Pinky",
-            self.pacman,
-            self.map,
-            self.characters,
+            x=206,
+            y=176,
+            width=constants.TILE_SIZE,
+            height=constants.TILE_SIZE,
+            spritesheet_path="../res/ghosts/Pinky",
+            spritesheet_chase_path="../res/ghosts/State_chase/Pinky",
+            spritesheet_scatter_path="../res/ghosts/State_scatter/Pinky",
+            notify_in_home=self.state_manager.change_to_in_home,
+            pacman=self.pacman,
+            map=self.map,
+            groups=tuple()
         )
-        self.ghosts.append(
-            self.pinky
-        )
+        self.ghosts.append(self.pinky)
 
         self.inky = ghost.Inky(
-            206,
-            176,
-            constants.TILE_SIZE,
-            constants.TILE_SIZE,
-            "../res/ghosts/Inky",
-            "../res/ghosts/State_chase/Inky",
-            "../res/ghosts/State_scatter/Inky",
-            self.pacman,
-            self.blinky,
-            self.map,
-            self.characters,
+            x=206,
+            y=176,
+            width=constants.TILE_SIZE,
+            height=constants.TILE_SIZE,
+            spritesheet_path="../res/ghosts/Inky",
+            spritesheet_chase_path="../res/ghosts/State_chase/Inky",
+            spritesheet_scatter_path="../res/ghosts/State_scatter/Inky",
+            notify_in_home=self.state_manager.change_to_in_home,
+            pacman=self.pacman,
+            blinky=self.blinky,
+            map=self.map,
+            groups=tuple()
         )
-        self.ghosts.append(
-            self.inky
-        )
+        self.ghosts.append(self.inky)
 
         self.clyde = ghost.Clyde(
-            206,
-            176,
-            constants.TILE_SIZE,
-            constants.TILE_SIZE,
-            "../res/ghosts/Clide",
-            "../res/ghosts/State_chase/Clide",
-            "../res/ghosts/State_scatter/Clide",
-            self.pacman,
-            self.map,
-            self.characters,
+            x=206,
+            y=176,
+            width=constants.TILE_SIZE,
+            height=constants.TILE_SIZE,
+            spritesheet_path="../res/ghosts/Clide",
+            spritesheet_chase_path="../res/ghosts/State_chase/Clide",
+            spritesheet_scatter_path="../res/ghosts/State_scatter/Clide",
+            notify_in_home=self.state_manager.change_to_in_home,
+            pacman=self.pacman,
+            map=self.map,
+            groups=tuple()
         )
-        self.ghosts.append(
-            self.clyde
-        )
+        self.ghosts.append(self.clyde)
 
-        # self.ghosts.sort(key=lambda x: x.priority)
         self.characters.add(*self.ghosts)
-        State.set_notify_dual_state_change(self.notify_dual_state_change)
-        State.set_notify_out_of_frightened(self.notify_out_of_frightened)
+
+        # State manager
+        self.state_manager.set_ghosts(self.ghosts)
+        self.state_manager.set_notify_pacman(self.pacman.set_power_up, False)
 
     def init_scene(self):
         self.display.clean()
@@ -125,88 +118,36 @@ class GameScene:
         self.display.add_moving_sprites(self.map.get_pellets())
         self.display.add_moving_sprites(self.characters)
 
-    def notify_scores(self):
-        self.score_value = self.get_score()
-        self.score_text = f"SCORE: {self.score_value}"
-        if self.score_value > self.high_score_value:
-            self.high_score_value = self.score_value
-            self.high_score_text = f"HIGH SCORE: {self.high_score_value}"
-        self.global_pellets_text = f"CONT_GLOBAL: {self.global_pellet_counter}"
-        self.blinky_counter = f"CONT_BLINKY: {self.blinky.get_counter()}"
-        self.pinky_counter = f"CONT_PINKY: {self.pinky.get_counter()}"
-        self.inky_counter = f"CONT_INKY: {self.inky.get_counter()}"
-        self.clyde_counter = f"CONT_CLYDE: {self.clyde.get_counter()}"
-
+    # TODO Sacar este metodo?
     def notify_lives(self):
         self.lives_text = f"x{self.pacman.get_lives()}"
         if self.pacman.get_lives() <= 0:
             self.terminate()
-            State.terminate()
 
-    def notify_pellets_in_map_change(self, remaining, pellets_eaten):
+    def notify_pellets_in_map_change(self, remaining, pellets_eaten, ate_an_energizer):
         self.map.pellet_group = remaining
-        self.check_level_completed()
+        self.is_level_done()
 
-        if self.count_pellets:
-            self.global_pellet_counter += pellets_eaten
+        self.state_manager.update_pellet_global_counter(pellets_eaten)
+        self.state_manager.update_pellet_counter_values(pellets_eaten)
 
-        for ghost in self.ghosts:
-            if self.pacman.power_up:
-                ghost.get_state().register_as_frightened()
-                ghost.fright()
-
-            if not self.count_pellets:
-                ghost.set_pellet_count(pellets_eaten)
-
-        if self.pacman.power_up:
-            State.change_to_fright()
-
-        if self.count_pellets:
-            self.global_pellet_counter += pellets_eaten
-
-    def notify_out_of_frightened(self):
-        self.pacman.set_power_up(False)
-
-    def notify_dual_state_change(self):
-        for ghost in self.ghosts:
-            if ghost.get_current_state() != State.IN_HOME:
-                ghost.get_state().change_to_scatter_chase()
-
-    def pacman_lose(self):
-        return self.pacman.get_lives() <= 0
-
-    def process_input(self, events):
-        pass
-
-    def check_level_completed(self):
-        level_completed = not len(self.map.pellet_group)
-        if level_completed:
-            self.terminate()
+        if ate_an_energizer:
+            self.state_manager.change_to_frightened()
 
     def render(self):
         self.display.draw()
-        self.display.render_text(self.high_score_text, False, constants.WHITE, (15, 510))
         self.display.render_text(
-            self.lives_text, False, constants.WHITE, (421, 510)
+            self.high_score_text, False, constants.WHITE, (15, 510)
         )
+        self.display.render_text(self.lives_text, False, constants.WHITE, (421, 510))
+        self.display.render_text(self.score_text, False, constants.WHITE, (198, 510))
+
         self.display.render_text(
-            self.score_text, False, constants.WHITE, (198, 510))
+            self.global_pellets_text, False, constants.YELLOW, (300, 525)
+        )
 
-        self.display.render_text(self.global_pellets_text, False, constants.YELLOW, (300, 525))
-
-        self.display.render_text(self.blinky_counter, False, constants.YELLOW, (15, 530))
-        self.display.render_text(self.pinky_counter, False, constants.YELLOW, (15, 545))
-        self.display.render_text(self.inky_counter, False, constants.YELLOW, (15, 560))
-        self.display.render_text(self.clyde_counter, False, constants.YELLOW, (15, 575))
+        self.display.render_text(self.ghost_counter, False, constants.YELLOW, (15, 530))
         self.display.update()
-
-    def terminate(self):
-        self.finish = True
-        self.display.clean()
-        State.terminate()
-
-    def is_finish(self):
-        return self.finish
 
     def get_score(self):
         return self.pacman.get_score()
@@ -237,33 +178,49 @@ class GameScene:
 
         self.pacman.check_collision_pellets(self.map.get_pellets())
 
-        collided, collided_ghosts = self.pacman.check_collision_ghosts(self.ghosts)
+        exists_collision, ghosts_collided = self.pacman.check_collision_ghosts(
+            self.ghosts
+        )
 
-        if collided:
-            if not self.pacman.power_up:
-                restart = False
-                for ghost in self.ghosts:
-                    if ghost.get_current_state() != State.DEAD:
-                        ghost.restart_position()
-                        ghost.restart_state()
-                        restart = True
-
-                if restart:
+        if exists_collision:
+            for ghost in ghosts_collided:
+                if not (ghost.can_be_consumed() or ghost.can_be_ignored()):
                     self.pacman.decrement_lives()
-                    self.pacman.restart_position()
-                    State.restart()
+                    self.restart()
 
-                    if not self.count_pellets:
-                        self.count_pellets = True
+            self.state_manager.check_collision(ghosts_collided)
 
-                        for ghost in self.ghosts:
-                            ghost.get_state().set_count_pellets(False)
-                    else:
-                        self.global_pellet_counter = 0
-                        self.global_pellets_text = f"CG: {self.global_pellet_counter}"
-            else:
-                for ghost in collided_ghosts:
-                    current_state = ghost.get_current_state()
-                    if current_state != State.DEAD and current_state != State.IN_HOME:
-                        ghost.die()
-                        self.score_value += ghost.get_score()
+        self.update_texts()
+
+    def is_level_done(self):
+        if not len(self.map.pellet_group):
+            self.terminate()
+
+    def terminate(self):
+        self.finish = True
+        self.display.clean()
+        self.state_manager.terminate()
+
+    def restart(self):
+        self.state_manager.restart()
+        for ghost in self.ghosts:
+            ghost.restart_position()
+            ghost.update_spritesheet()
+
+        self.pacman.restart()
+
+    def is_finish(self):
+        return self.finish
+
+    def update_texts(self):
+        self.score_value = self.get_score()
+        self.score_text = f"SCORE: {self.score_value}"
+        if self.score_value > self.high_score_value:
+            self.high_score_value = self.score_value
+            self.high_score_text = f"HIGH SCORE: {self.high_score_value}"
+        self.global_pellets_text = (
+            f"CONT_GLOBAL: {self.state_manager.get_global_counter_value()}"
+        )
+        self.ghost_counter = (
+            f"CONT_GHOSTS: {self.state_manager.get_pellet_counter_value()}"
+        )

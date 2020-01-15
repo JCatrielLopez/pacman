@@ -25,10 +25,27 @@ class Pacman(actor.MovingActor):
     spritesheet_path = "../res/pacman"
     spritesheet_power_up_path = "../res/pacman_white"
 
-    def __init__(self, x, y, width, height, current_map, notify_scores, notify_lives, notify_pellets_in_map_change,
-                 *groups):
+    def __init__(
+            self,
+            x,
+            y,
+            width,
+            height,
+            current_map,
+            notify_scores,
+            notify_lives,
+            notify_pellets_in_map_change,
+            *groups
+    ):
         super().__init__(
-            x, y, width, height, constants.YELLOW, Pacman.spritesheet_path, current_map, *groups
+            x,
+            y,
+            width,
+            height,
+            constants.YELLOW,
+            Pacman.spritesheet_path,
+            current_map,
+            *groups
         )
         self.notify_scores = notify_scores
         self.notify_lives = notify_lives
@@ -47,7 +64,12 @@ class Pacman(actor.MovingActor):
 
             self.pellets_consumed += len(colliding)
             self.add_score(score)
-            self.notify_pellets_in_map_change(pellet_list, len(colliding))
+            self.notify_pellets_in_map_change(
+                pellet_list, len(colliding), self.power_up
+            )
+
+    def deactivate_power_up(self):
+        self.power_up = False
 
     def check_collision_ghosts(self, ghosts_hitboxes):
         hits = []
@@ -85,3 +107,10 @@ class Pacman(actor.MovingActor):
             self.set_spritesheet(Pacman.spritesheet_power_up_path)
         else:
             self.set_spritesheet(Pacman.spritesheet_path)
+
+    def is_energized(self):
+        return self.power_up
+
+    def restart(self):
+        self.restart_position()
+        self.set_power_up(False)

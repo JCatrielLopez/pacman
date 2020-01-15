@@ -44,7 +44,6 @@ class Mode:
 
 
 class Frightened(Mode):
-
     def back(self, current_dir):
         return -current_dir[0], -current_dir[1]
 
@@ -71,7 +70,6 @@ class Frightened(Mode):
 
 
 class Dead(Mode):
-
     def set_target_tile(self, target):
         self.target_position = (208, 208)
 
@@ -114,7 +112,6 @@ class Chase(Mode):
 
 
 class Scatter(Mode):
-
     def set_target_tile(self, target):
         pass
 

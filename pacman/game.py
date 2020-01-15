@@ -22,7 +22,7 @@ class Game:
             "../res/map/02_level.npz",
             "../res/map/03_level.npz",
             "../res/map/04_level.npz",
-            "../res/map/05_level.npz"
+            "../res/map/05_level.npz",
         ]
 
     def __str__(self):
@@ -73,7 +73,7 @@ class Game:
 
                 self.clock.tick(constants.FPS)
 
-            if quit_game or active_scene.pacman_lose():
+            if quit_game:
                 break
 
 

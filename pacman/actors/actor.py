@@ -135,7 +135,10 @@ class MovingActor(Actor):
             j += self.next_dir[0]
             i += self.next_dir[1]
 
-            if self.current_map.is_valid((j, i)) or self.current_map.get_value((j, i)) == 4:
+            if (
+                    self.current_map.is_valid((j, i))
+                    or self.current_map.get_value((j, i)) == 4
+            ):
                 self.direction = self.next_dir
                 self.next_dir = None
 
@@ -144,13 +147,6 @@ class MovingActor(Actor):
             self.rect.y += self.direction[1]
         self.adjust_movement()
         self.add_timer()
-
-        # ghosts_hit_list = pg.sprite.spritecollide(self, self.ghosts, False)
-        # for ghost in ghosts_hit_list:
-        #     print("Hit", ghost.name, "at:", ghost.rect.x, ",", ghost.rect.y)
-
-        # if len(ghosts_hit_list) > 0:
-        #     self.restart()
 
         self.check_limits()
 

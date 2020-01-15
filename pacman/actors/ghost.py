@@ -13,8 +13,17 @@ class Ghost(actor.MovingActor):
     home_door_position = (216, 176)
 
     def __init__(
-            self, x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path, pacman,
-            current_map=None, *groups
+            self,
+            x=None,
+            y=None,
+            width=None,
+            height=None,
+            spritesheet_path=None,
+            spritesheet_chase_path=None,
+            spritesheet_scatter_path=None,
+            current_map=None,
+            pacman=None,
+            groups=None
     ):
         super().__init__(
             x, y, width, height, constants.RED, spritesheet_path, current_map, *groups
@@ -23,11 +32,6 @@ class Ghost(actor.MovingActor):
         self.name = None
         self.pacman = pacman
         self.home_position = (0, 0)
-        self.pellet_counter = 0
-        self.pellet_limit = 0
-        self.global_pellet_limit = 0
-        self.global_pellet_counter = 0
-        self.count_pellets = True
 
         self.color = constants.RED
         self.spritesheet_path = spritesheet_path
@@ -36,39 +40,29 @@ class Ghost(actor.MovingActor):
         self.spritesheet_dead_path = "../res/ghosts/State_dead"
         self.spritesheet_frightened_path = "../res/ghosts/State_scared"
 
-    def back(self, current_dir):
+    def back_direction(self, current_dir):
         return -current_dir[0], -current_dir[1]
 
-    # def die(self):
-    #     if self.get_current_state() != State.DEAD:
-    #         self.state.change_to_dead()
-    #         self.image.fill(constants.GREEN)
-    #         self.set_spritesheet(self.spritesheet_dead_path)
-
-    def get_state(self):
-        return self.state
+    # TODO Sacar este metodo?
+    def die(self):
+        #     if self.get_current_state() != State.DEAD:
+        #         self.state.change_to_dead()
+        #         self.image.fill(constants.GREEN)
+        #         self.set_spritesheet(self.spritesheet_dead_path)
+        pass
 
     def get_current_state(self):
-        return self.state.get_state()
-
-    def fright(self):
-        if self.get_current_state() != State.DEAD:
-            self.image.fill(constants.BLUE)
-            self.set_spritesheet(self.spritesheet_frightened_path)
+        return self.state.get_current_state()
 
     def get_score(self):
         return self.score
 
-    def restart_state(self):
-        self.state = State(self.options)
-        self.state.set_notify_state_change(self.notify_state_change)
-        self.state.set_target_corner(self.target_corner)
-        self.notify_state_change()
-
-    def tp(self, new_location):
+    def teleport(self, new_location):
         self.rect.x = new_location[0]
         self.rect.y = new_location[1]
         self.direction = constants.LEFT
+
+        self.state.notify(self)
 
     def move(self):
         if self.get_current_state() == State.DEAD:
@@ -77,39 +71,13 @@ class Ghost(actor.MovingActor):
             distance = self.current_map.get_distance(current_position, target)
 
             if distance < 2:
-                self.tp(self.home_position)
-                self.state.register_as_in_home()
-                State.change_to_in_home()  # TODO Cambiar esto de lugar
+                self.teleport(self.home_position)
             else:
                 super().move()
         elif self.get_current_state() != State.IN_HOME:
             super().move()
 
-    def set_pellet_count(self, amount):
-        if self.get_current_state() == State.IN_HOME:
-            self.state.add_pellets_counted(amount)
-
-    def get_counter(self):
-        return self.state.get_pellets_counted()
-
-    # TODO
-    def check_pellet_limits(self):
-        if self.count_pellets:
-            if self.pellet_counter > self.pellet_limit:
-                self.tp(self.home_door_position)
-                self.state.change_to_scatter_chase()
-        else:
-            if self.global_pellet_counter > self.global_pellet_limit:
-                self.tp(self.home_door_position)
-                self.state.change_to_scatter_chase()
-
-    def die(self):
-        if self.get_current_state() != State.DEAD and self.get_current_state() != State.IN_HOME:
-            self.state.change_to_dead()
-            self.image.fill(constants.GREEN)
-            self.set_spritesheet(self.spritesheet_dead_path)
-
-    def notify_state_change(self):
+    def update_spritesheet(self):
 
         if self.get_current_state() == State.SCATTER:
             self.set_spritesheet(self.spritesheet_scatter_path)
@@ -123,22 +91,57 @@ class Ghost(actor.MovingActor):
         elif self.get_current_state() == State.FRIGHTENED:
             self.set_spritesheet(self.spritesheet_frightened_path)
 
-        elif self.state.get_state() == State.IN_HOME:
+        elif self.state.get_current_state() == State.IN_HOME:
             self.set_spritesheet(self.spritesheet_path)
 
-    def can_be_fright(self):
-        return self.state.can_be_fright()
+    def can_be_frightened(self):
+        return self.state.can_be_frightened()
+
+    def can_be_consumed(self):
+        return self.state.can_be_consumed()
+
+    def can_be_ignored(self):
+        return self.state.can_be_ignored()
 
     def set_state(self, st):
+        if self.state.current_state == State.IN_HOME:
+            import traceback
+            for line in traceback.format_stack():
+                print(line.strip())
+            self.teleport(self.home_door_position)
+
+        # print(f"{self.name} -> {st}")
         self.state.update_state(st)
-        self.notify_state_change()
+        self.update_spritesheet()
 
 
 class Blinky(Ghost):
-    def __init__(self, x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path, pacman,
-                 *groups):
-        super().__init__(x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path,
-                         pacman, *groups)
+    def __init__(
+            self,
+            x=None,
+            y=None,
+            width=None,
+            height=None,
+            spritesheet_path=None,
+            spritesheet_chase_path=None,
+            spritesheet_scatter_path=None,
+            notify_in_home=None,
+            pacman=None,
+            map=None,
+            groups=None
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            spritesheet_path=spritesheet_path,
+            spritesheet_chase_path=spritesheet_chase_path,
+            spritesheet_scatter_path=spritesheet_scatter_path,
+            current_map=map,
+            pacman=pacman,
+            groups=groups
+        )
 
         self.color = constants.RED
         self.image.fill(self.color)
@@ -149,25 +152,49 @@ class Blinky(Ghost):
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.state.set_notify_teleport(notify_in_home)
         self.pellet_limit = 0
         self.global_pellet_limit = 0
 
-        self.state.set_notify_state_change(self.notify_state_change)
-        self.notify_state_change()
+        self.priority = 0
+
+        self.update_spritesheet()
 
     def move(self):
         self.state.set_target_position(self.pacman.get_pos())
         self.next_dir = self.state.get_next_dir(
-            self.get_pos(), self.back(self.direction), self.current_map
+            self.get_pos(), self.back_direction(self.direction), self.current_map
         )
         super().move()
 
 
 class Pinky(Ghost):
-    def __init__(self, x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path, pacman,
-                 *groups):
-        super().__init__(x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path,
-                         pacman, *groups)
+    def __init__(
+            self,
+            x=None,
+            y=None,
+            width=None,
+            height=None,
+            spritesheet_path=None,
+            spritesheet_chase_path=None,
+            spritesheet_scatter_path=None,
+            notify_in_home=None,
+            pacman=None,
+            map=None,
+            groups=None
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            spritesheet_path=spritesheet_path,
+            spritesheet_chase_path=spritesheet_chase_path,
+            spritesheet_scatter_path=spritesheet_scatter_path,
+            current_map=map,
+            pacman=pacman,
+            groups=groups
+        )
 
         self.color = constants.PINK
         self.image.fill(self.color)
@@ -178,11 +205,14 @@ class Pinky(Ghost):
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.state.set_notify_teleport(notify_in_home)
         self.pellet_limit = 0
         self.global_pellet_limit = 7
 
-        self.state.set_notify_state_change(self.notify_state_change)
-        self.notify_state_change()
+        self.priority = 1
+
+        # self.state.set_notify_state_change(self.change_spritesheet)
+        self.update_spritesheet()
 
     def move(self):
         # self.check_mode()
@@ -195,16 +225,39 @@ class Pinky(Ghost):
 
         self.state.set_target_position(target_position)
         self.next_dir = self.state.get_next_dir(
-            self.get_pos(), self.back(self.direction), self.current_map
+            self.get_pos(), self.back_direction(self.direction), self.current_map
         )
         super().move()
 
 
 class Inky(Ghost):
-    def __init__(self, x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path, pacman,
-                 blinky, *groups):
-        super().__init__(x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path,
-                         pacman, *groups)
+    def __init__(
+            self,
+            x=None,
+            y=None,
+            width=None,
+            height=None,
+            spritesheet_path=None,
+            spritesheet_chase_path=None,
+            spritesheet_scatter_path=None,
+            notify_in_home=None,
+            pacman=None,
+            blinky=None,
+            map=None,
+            groups=None
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            spritesheet_path=spritesheet_path,
+            spritesheet_chase_path=spritesheet_chase_path,
+            spritesheet_scatter_path=spritesheet_scatter_path,
+            current_map=map,
+            pacman=pacman,
+            groups=groups
+        )
 
         self.color = constants.LIGHT_BLUE
         self.image.fill(self.color)
@@ -216,11 +269,14 @@ class Inky(Ghost):
         self.options = [constants.UP, constants.RIGHT, constants.DOWN, constants.LEFT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.state.set_notify_teleport(notify_in_home)
         self.pellet_limit = 30
         self.global_pellet_limit = 17
 
-        self.state.set_notify_state_change(self.notify_state_change)
-        self.notify_state_change()
+        self.priority = 2
+
+        # self.state.set_notify_state_change(self.change_spritesheet)
+        self.update_spritesheet()
 
     def move(self):
         pacman_position = self.pacman.get_pos()
@@ -229,28 +285,52 @@ class Inky(Ghost):
 
         aux = (
             pacman_position[0] + pacman_direction[0] * constants.TILE_SIZE * 2,
-            pacman_position[1] + pacman_direction[1] * constants.TILE_SIZE * 2
+            pacman_position[1] + pacman_direction[1] * constants.TILE_SIZE * 2,
         )
 
         vector = np.array(blinky_position) - np.array(aux)
 
         target_position = self.get_pos()
-        target_position = (target_position[0] + vector[0] * 2, target_position[1] + vector[1] * 2)
+        target_position = (
+            target_position[0] + vector[0] * 2,
+            target_position[1] + vector[1] * 2,
+        )
 
         self.state.set_target_position(target_position)
         self.next_dir = self.state.get_next_dir(
-            self.get_pos(), self.back(self.direction), self.current_map
+            self.get_pos(), self.back_direction(self.direction), self.current_map
         )
 
         super().move()
 
 
 class Clyde(Ghost):
-    def __init__(self, x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path, pacman,
-                 *groups):
-        super().__init__(x, y, width, height, spritesheet_path, spritesheet_chase_path, spritesheet_scatter_path,
-                         pacman, *groups)
-
+    def __init__(
+            self,
+            x=None,
+            y=None,
+            width=None,
+            height=None,
+            spritesheet_path=None,
+            spritesheet_chase_path=None,
+            spritesheet_scatter_path=None,
+            notify_in_home=None,
+            pacman=None,
+            map=None,
+            groups=None
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            spritesheet_path=spritesheet_path,
+            spritesheet_chase_path=spritesheet_chase_path,
+            spritesheet_scatter_path=spritesheet_scatter_path,
+            current_map=map,
+            pacman=pacman,
+            groups=groups
+        )
         self.color = constants.ORANGE
         self.image.fill(self.color)
         self.name = "Clyde"
@@ -260,15 +340,16 @@ class Clyde(Ghost):
         self.options = [constants.UP, constants.LEFT, constants.DOWN, constants.RIGHT]
         self.state = State(self.options)
         self.state.set_target_corner(self.target_corner)
+        self.state.set_notify_teleport(notify_in_home)
         self.pellet_limit = 60
         self.global_pellet_limit = 32
 
-        self.state.set_notify_state_change(self.notify_state_change)
-        self.notify_state_change()
+        self.priority = 3
+
+        # self.state.set_notify_state_change(self.change_spritesheet)
+        self.update_spritesheet()
 
     def move(self):
-
-        # print(f"{self.name}:: State: {self.get_current_state()}")
         pacman_grid = self.current_map.get_grid(self.pacman.get_pos())
         clyde_grid = self.current_map.get_grid(self.get_pos())
 
@@ -278,6 +359,6 @@ class Clyde(Ghost):
             self.state.set_target_position(self.pacman.get_pos())
 
         self.next_dir = self.state.get_next_dir(
-            self.get_pos(), self.back(self.direction), self.current_map
+            self.get_pos(), self.back_direction(self.direction), self.current_map
         )
         super().move()
