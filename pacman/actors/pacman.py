@@ -54,6 +54,7 @@ class Pacman(actor.MovingActor):
         self.notify_scores = notify_scores
         self.notify_lives = notify_lives
         self.notify_pellets_in_map_change = notify_pellets_in_map_change
+        self.double_move_counter = 0
 
     def check_collision_pellets(self, pellet_list):
         colliding = [i for i in pellet_list.sprites() if self.rect.colliderect(i)]
@@ -119,3 +120,10 @@ class Pacman(actor.MovingActor):
     def restart(self):
         self.restart_position()
         self.set_power_up(False)
+
+    def move(self):
+        self.double_move_counter += 1
+        self.double_move_counter = self.double_move_counter % 3
+        if self.power_up and self.double_move_counter == 0:
+            super().move()
+        super().move()
