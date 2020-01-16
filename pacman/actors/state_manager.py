@@ -184,7 +184,6 @@ class StateManager:
     def set_global_counter(self, value):
         self.pellet_global_counter = value
 
-    # TODO Hacer esto bien! El pacman tiene que saber cuando se termina el frightened.
     def set_notify_pacman(self, function, argument):
         self.notify_pacman = function
         self.notify_pacman_arg = argument
@@ -192,10 +191,11 @@ class StateManager:
     def activate_time_limit(self):
         self.last_pellet_timer.start()
 
-    def check_collision(self, ghost_collided):
+    def check_collision(self, ghost_collided, pacman):
         for ghost in ghost_collided:
             if ghost.get_current_state() == State.FRIGHTENED:
                 ghost.set_state(State.DEAD)
+                pacman.add_score(ghost.get_score())
 
     def restart(self):
         self.dual_state = State.SCATTER

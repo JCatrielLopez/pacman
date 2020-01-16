@@ -190,7 +190,7 @@ class GameScene:
                         self.state_manager.update_pellet_global_counter(True)
                         self.state_manager.update_pellet_ghost_counter(False)
 
-            self.state_manager.check_collision(ghosts_collided)
+            self.state_manager.check_collision(ghosts_collided, self.pacman)
 
         self.update_texts()
 
