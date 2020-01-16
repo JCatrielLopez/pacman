@@ -1,8 +1,12 @@
+import logging
+
 import pygame as pg
 
 from pacman.actors.state_manager import StateManager
 from . import map, constants
 from .actors import pacman, ghost
+
+logger = logging.getLogger()
 
 
 class GameScene:
@@ -120,11 +124,13 @@ class GameScene:
         self.map.pellet_group = remaining
         self.is_level_done()
 
+        if ate_an_energizer:
+            logger.debug("Pacman ate an energizer")
+            self.state_manager.change_to_frightened()
+
         self.state_manager.update_pellet_global_counter_values(pellets_eaten)
         self.state_manager.update_pellet_ghost_counter_values(pellets_eaten)
         self.state_manager.reset_last_pellet_timer()
-        if ate_an_energizer:
-            self.state_manager.change_to_frightened()
 
     def render(self):
         self.display.draw()

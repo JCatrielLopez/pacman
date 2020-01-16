@@ -36,7 +36,7 @@ class StateManager:
         self.dual_timer = MyTimer(
             self.scatter_time_list[self.dual_time_index], self.switch_scatter_chase
         )
-        # self.dual_timer.start()
+        self.dual_timer.start()
 
         self.frightened_timer: MyTimer = None
         self.frightened_timeout = 6
@@ -65,6 +65,7 @@ class StateManager:
         self.ghosts.sort(key=lambda x: x.priority)
 
     def switch_scatter_chase(self):
+        logger.debug("switch_scatter_chase")
         if self.dual_state == State.SCATTER:
             self.dual_state = State.CHASE
             self.dual_timer.cancel()
@@ -110,7 +111,10 @@ class StateManager:
                 if ghost.get_current_state() == State.FRIGHTENED:
                     ghost.set_state(self.dual_state)
 
+            logger.debug("end_of_fright_timeout OK")
             self.notify_pacman(self.notify_pacman_arg)
+        else:
+            logger.debug("end_of_fright_timeout is None")
 
     def change_to_dead(self, ghost):
         if ghost.get_current_state() == State.FRIGHTENED:
@@ -130,11 +134,14 @@ class StateManager:
     def reset_last_pellet_timer(self):
 
         if self.last_pellet_timer is not None:
+            logger.debug("reset_last_pellet_timer OK")
             self.last_pellet_timer.cancel()
             self.last_pellet_timer = MyTimer(
                 self.last_pellet_timeout, self.resurrect_by_timer
             )
             self.last_pellet_timer.start()
+        else:
+            logger.debug("reset_last_pellet_timer is None")
 
     def resurrect_by_timer(self):
         for index in range(0, len(self.ghosts)):
@@ -243,12 +250,16 @@ class StateManager:
 
             for index in range(0, len(self.ghosts)):
                 if self.ghosts[index].get_current_state() == State.IN_HOME:
+                    # logger.debug(f"Updating local pellet counter for {self.ghosts[index]}")
                     self.pellet_ghost_counter_values[index] += amount
                     self.resurrect_by_limit(index)
                     return True
+        # logger.debug(f"Couldn't update local pellet counter")
         return False
 
     def update_pellet_global_counter_values(self, amount):
         if self.pellet_global_counter:
+            # logger.debug("Updating global pellet counter")
             self.pellet_global_counter_value += amount
             self.resurrect_by_global_limit()
+        # logger.debug(f"Couldn't update global pellet counter")

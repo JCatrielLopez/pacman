@@ -1,3 +1,4 @@
+import logging
 from threading import Lock
 
 import numpy as np
@@ -6,6 +7,7 @@ from pacman.actors.state import State
 from . import actor
 from .. import constants
 
+logger = logging.getLogger()
 
 class Ghost(actor.MovingActor):
     # TODO agregar comer fantasmas y que vuelvan a la casa - que inicien en la casa
@@ -35,7 +37,7 @@ class Ghost(actor.MovingActor):
 
         self.name = None
         self.pacman = pacman
-        self.home_position = (0, 0)
+        # self.home_position = (0, 0)
 
         self.color = constants.RED
         self.spritesheet_path = spritesheet_path
@@ -62,6 +64,7 @@ class Ghost(actor.MovingActor):
         return self.score
 
     def teleport(self, new_location):
+        logger.debug(f"teleport to {new_location}")
         self.rect.x = new_location[0]
         self.rect.y = new_location[1]
         self.direction = constants.LEFT
@@ -110,6 +113,7 @@ class Ghost(actor.MovingActor):
     # TODO Creo que hace falta un lock aca. Podes comerte un energizer justo cuando salen de asustarse.
     def set_state(self, st):
         self.threadLock.acquire(blocking=True)
+        logger.debug(f"{self.name} -> set_state({st})")
         if self.state.current_state == State.IN_HOME:
             self.teleport(self.home_door_position)
 

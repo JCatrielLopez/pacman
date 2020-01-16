@@ -1,5 +1,9 @@
+import logging
+
 from . import actor
 from .. import constants
+
+logger = logging.getLogger()
 
 
 class Pacman(actor.MovingActor):
@@ -54,10 +58,12 @@ class Pacman(actor.MovingActor):
     def check_collision_pellets(self, pellet_list):
         colliding = [i for i in pellet_list.sprites() if self.rect.colliderect(i)]
         score = 0
+        ate_energizer = False
         if len(colliding):
             for i in colliding:
                 if i.is_energizer():
-                    self.power_up = True
+                    ate_energizer = True
+                    self.set_power_up(True)
                     self.set_spritesheet(Pacman.spritesheet_power_up_path)
                 score += i.get_score()
                 pellet_list.remove(i)
@@ -65,11 +71,8 @@ class Pacman(actor.MovingActor):
             self.pellets_consumed += len(colliding)
             self.add_score(score)
             self.notify_pellets_in_map_change(
-                pellet_list, len(colliding), self.power_up
+                pellet_list, len(colliding), ate_energizer
             )
-
-    def deactivate_power_up(self):
-        self.power_up = False
 
     def check_collision_ghosts(self, ghosts_hitboxes):
         hits = []
@@ -102,6 +105,8 @@ class Pacman(actor.MovingActor):
         self.lives = param
 
     def set_power_up(self, power_up):
+        logger.debug(f"set_power_up({power_up})")
+
         self.power_up = power_up
         if power_up:
             self.set_spritesheet(Pacman.spritesheet_power_up_path)
