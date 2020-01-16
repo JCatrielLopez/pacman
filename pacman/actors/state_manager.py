@@ -49,7 +49,7 @@ class StateManager:
         self.pellet_ghost_counter = True
 
         self.pellet_global_counter_value = 0
-        self.pellet_global_counter_limits = [0, 0, 17, 32]
+        self.pellet_global_counter_limits = [0, 7, 17, 32]
         self.pellet_global_counter = False
 
         self.last_pellet_timeout = 4
@@ -148,6 +148,7 @@ class StateManager:
             if self.ghosts[index].get_current_state() == State.IN_HOME:
                 self.ghosts[index].set_state(self.dual_state)
                 logger.debug(f"{self.ghosts[index].name} resurrected by timer!")
+                self.reset_last_pellet_timer()
                 return True
 
         self.last_pellet_timer.cancel()
@@ -166,7 +167,7 @@ class StateManager:
         return False
 
     def resurrect_by_global_limit(self):
-        if self.pellet_ghost_counter_values[3] == self.pellet_global_counter_limits[3]:
+        if self.pellet_global_counter_value == self.pellet_global_counter_limits[3]:
             self.set_global_counter(False)
             return False
 
