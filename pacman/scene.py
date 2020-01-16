@@ -35,7 +35,7 @@ class GameScene:
         self.characters = pg.sprite.Group()
         self.state_manager = StateManager()
 
-        # TODO Revisar pacman
+
         self.pacman = pacman.Pacman(
             216,
             272,
@@ -114,7 +114,7 @@ class GameScene:
         self.display.add_moving_sprites(self.map.get_pellets())
         self.display.add_moving_sprites(self.characters)
 
-    # TODO Sacar este metodo?
+
     def notify_lives(self):
         self.lives_text = f"x{self.pacman.get_lives()}"
         if self.pacman.get_lives() <= 0:

@@ -5,8 +5,6 @@ from pacman.my_timer import MyTimer
 
 logger = logging.getLogger()
 
-
-# TODO Si necesitan saber donde se llamo una funcion, pongan este pedazo de codigo en esa funcion:
 # logging.debug("---------------------------------------------------------------------------------------------------------")
 # import traceback
 # for line in traceback.format_stack():
@@ -168,15 +166,13 @@ class StateManager:
 
     def resurrect_by_global_limit(self):
         if self.pellet_global_counter_value == self.pellet_global_counter_limits[3]:
-            self.set_global_counter(False)
+            self.update_pellet_global_counter(False)
+            self.update_pellet_ghost_counter(True)
             return False
 
         for index in range(0, len(self.ghosts)):
             if self.ghosts[index].get_current_state() == State.IN_HOME:
-                if (
-                        self.pellet_ghost_counter_values[index]
-                        == self.pellet_global_counter_limits[index]
-                ):
+                if self.pellet_global_counter_value == self.pellet_global_counter_limits[index]:
                     self.ghosts[index].set_state(self.dual_state)
                     logger.debug(f"{self.ghosts[index].name} resurrected by global limit!")
                     return True
@@ -214,7 +210,6 @@ class StateManager:
 
         self.ghosts[0].set_state(State.SCATTER)
 
-        self.pellet_ghost_counter_values = [0, 0, 0, 0]
         self.pellet_global_counter_value = 0
         self.pellet_global_counter = False
 
@@ -264,3 +259,4 @@ class StateManager:
             self.pellet_global_counter_value += amount
             self.resurrect_by_global_limit()
         # logger.debug(f"Couldn't update global pellet counter")
+

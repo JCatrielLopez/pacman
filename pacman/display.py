@@ -57,10 +57,8 @@ class Display:
         self.surface.fill(constants.BLACK)
 
         if self.hide_sprites:
-            # TODO: Se podrian dibujar las paredes solamente una vez por mapa?
             for group in self.static_sprites:
                 group.draw(self.surface)
-            # TODO: Se podrian dibujar los pellets solamente cuando te los comes?
             for group in self.moving_sprites:
                 group.draw(self.surface)
         else:

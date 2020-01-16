@@ -4,8 +4,6 @@ from pacman import constants
 
 
 class State:
-    # TODO hacer la integracion de todo esto
-    # TODO posible nuevo estado del los fantasmas adentro de la casa
 
     SCATTER = 0
     CHASE = 1

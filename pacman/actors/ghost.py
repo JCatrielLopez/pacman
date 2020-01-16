@@ -10,7 +10,6 @@ from .. import constants
 logger = logging.getLogger()
 
 class Ghost(actor.MovingActor):
-    # TODO agregar comer fantasmas y que vuelvan a la casa - que inicien en la casa
 
     score = 800
     state = None
@@ -49,13 +48,6 @@ class Ghost(actor.MovingActor):
     def back_direction(self, current_dir):
         return -current_dir[0], -current_dir[1]
 
-    # TODO Sacar este metodo?
-    def die(self):
-        #     if self.get_current_state() != State.DEAD:
-        #         self.state.change_to_dead()
-        #         self.image.fill(constants.GREEN)
-        #         self.set_spritesheet(self.spritesheet_dead_path)
-        pass
 
     def get_current_state(self):
         return self.state.get_current_state()
@@ -110,7 +102,6 @@ class Ghost(actor.MovingActor):
     def can_be_ignored(self):
         return self.state.can_be_ignored()
 
-    # TODO Creo que hace falta un lock aca. Podes comerte un energizer justo cuando salen de asustarse.
     def set_state(self, st):
         self.threadLock.acquire(blocking=True)
         logger.debug(f"{self.name} -> set_state({st})")
