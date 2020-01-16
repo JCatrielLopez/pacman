@@ -17,6 +17,7 @@ class Ghost(actor.MovingActor):
 
     threadLock = Lock()
 
+
     def __init__(
             self,
             x=None,
@@ -34,9 +35,10 @@ class Ghost(actor.MovingActor):
             x, y, width, height, constants.RED, spritesheet_path, current_map, *groups
         )
 
+        self.perform_move = True
+
         self.name = None
         self.pacman = pacman
-        # self.home_position = (0, 0)
 
         self.color = constants.RED
         self.spritesheet_path = spritesheet_path
@@ -64,6 +66,10 @@ class Ghost(actor.MovingActor):
         self.state.notify(self)
 
     def move(self):
+        self.perform_move = not self.perform_move
+        if self.state.get_current_state() == State.FRIGHTENED and not self.perform_move:
+            return
+
         if self.get_current_state() == State.DEAD:
             current_position = self.current_map.get_grid(self.get_pos())
             target = self.current_map.get_grid(self.home_door_position)
