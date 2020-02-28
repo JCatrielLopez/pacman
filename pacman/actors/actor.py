@@ -1,6 +1,7 @@
 import pygame as pg
 
-from .. import constants, spritesheet as sp
+import constants
+import spritesheet as sp
 
 
 class Actor(pg.sprite.Sprite):

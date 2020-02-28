@@ -26,8 +26,8 @@ class Pacman(actor.MovingActor):
     notify_lives = None
     notify_pellets_in_map_change = None
 
-    spritesheet_path = "../res/pacman"
-    spritesheet_power_up_path = "../res/pacman_white"
+    spritesheet_path = "../../res/pacman"
+    spritesheet_power_up_path = "../../res/pacman_white"
 
     def __init__(
             self,
@@ -39,7 +39,7 @@ class Pacman(actor.MovingActor):
             notify_scores,
             notify_lives,
             notify_pellets_in_map_change,
-            *groups
+            *groups,
     ):
         super().__init__(
             x,
@@ -49,11 +49,13 @@ class Pacman(actor.MovingActor):
             constants.YELLOW,
             Pacman.spritesheet_path,
             current_map,
-            *groups
+            *groups,
         )
         self.notify_scores = notify_scores
         self.notify_lives = notify_lives
         self.notify_pellets_in_map_change = notify_pellets_in_map_change
+
+        self.visited_positions = []
 
     def check_collision_pellets(self, pellet_list):
         colliding = [i for i in pellet_list.sprites() if self.rect.colliderect(i)]
@@ -105,7 +107,7 @@ class Pacman(actor.MovingActor):
         self.lives = param
 
     def set_power_up(self, power_up):
-        logger.debug(f"set_power_up({power_up})")
+        # logger.debug(f"set_power_up({power_up})")
 
         self.power_up = power_up
         if power_up:
@@ -119,3 +121,15 @@ class Pacman(actor.MovingActor):
     def restart(self):
         self.restart_position()
         self.set_power_up(False)
+
+    def visited_position(self, pos):
+        return self.current_map.get_grid(pos) in self.visited_positions
+
+    def move(self):
+        old_grid = self.current_map.get_grid(self.get_pos())
+        super().move()
+        new_grid = self.current_map.get_grid(self.get_pos())
+
+        if old_grid != new_grid:
+            if old_grid not in self.visited_positions:
+                self.visited_positions.append(old_grid)

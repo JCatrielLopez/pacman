@@ -1,16 +1,16 @@
-import logging
 from threading import Lock
 
 import numpy as np
 
+import actor
+import constants
 from pacman.actors.state import State
-from . import actor
-from .. import constants
 
-logger = logging.getLogger()
+
+# logger = logging.getLogger()
+
 
 class Ghost(actor.MovingActor):
-
     score = 800
     state = None
     home_door_position = (216, 176)
@@ -28,7 +28,7 @@ class Ghost(actor.MovingActor):
             spritesheet_scatter_path=None,
             current_map=None,
             pacman=None,
-            groups=None
+            groups=None,
     ):
         super().__init__(
             x, y, width, height, constants.RED, spritesheet_path, current_map, *groups
@@ -48,7 +48,6 @@ class Ghost(actor.MovingActor):
     def back_direction(self, current_dir):
         return -current_dir[0], -current_dir[1]
 
-
     def get_current_state(self):
         return self.state.get_current_state()
 
@@ -56,7 +55,7 @@ class Ghost(actor.MovingActor):
         return self.score
 
     def teleport(self, new_location):
-        logger.debug(f"teleport to {new_location}")
+        # logger.debug(f"teleport to {new_location}")
         self.rect.x = new_location[0]
         self.rect.y = new_location[1]
         self.direction = constants.LEFT
@@ -104,7 +103,7 @@ class Ghost(actor.MovingActor):
 
     def set_state(self, st):
         self.threadLock.acquire(blocking=True)
-        logger.debug(f"{self.name} -> set_state({st})")
+        # logger.debug(f"{self.name} -> set_state({st})")
         if self.state.current_state == State.IN_HOME:
             self.teleport(self.home_door_position)
 
@@ -124,7 +123,7 @@ class Blinky(Ghost):
             notify_in_home=None,
             pacman=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = Ghost.home_door_position
         super().__init__(
@@ -137,7 +136,7 @@ class Blinky(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
 
         self.color = constants.RED
@@ -177,7 +176,7 @@ class Pinky(Ghost):
             notify_in_home=None,
             pacman=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = (216, 224)
         super().__init__(
@@ -190,7 +189,7 @@ class Pinky(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
 
         self.color = constants.PINK
@@ -238,7 +237,7 @@ class Inky(Ghost):
             pacman=None,
             blinky=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = (184, 224)
         super().__init__(
@@ -251,7 +250,7 @@ class Inky(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
 
         self.color = constants.LIGHT_BLUE
@@ -309,7 +308,7 @@ class Clyde(Ghost):
             notify_in_home=None,
             pacman=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = (248, 224)
         super().__init__(
@@ -322,7 +321,7 @@ class Clyde(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
         self.color = constants.ORANGE
         self.image.fill(self.color)

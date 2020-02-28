@@ -1,15 +1,14 @@
-import logging
-
 from pacman.actors.state import State
 from pacman.my_timer import MyTimer
 
-logger = logging.getLogger()
+# logger = logging.getLogger()
 
 # logging.debug("---------------------------------------------------------------------------------------------------------")
 # import traceback
 # for line in traceback.format_stack():
 #     print(line.strip())
 # logging.debug("---------------------------------------------------------------------------------------------------------")
+
 
 class StateManager:
     BLINKY_INDEX = 0
@@ -63,7 +62,7 @@ class StateManager:
         self.ghosts.sort(key=lambda x: x.priority)
 
     def switch_scatter_chase(self):
-        logger.debug("switch_scatter_chase")
+        # logger.debug("switch_scatter_chase")
         if self.dual_state == State.SCATTER:
             self.dual_state = State.CHASE
             self.dual_timer.cancel()
@@ -76,6 +75,7 @@ class StateManager:
                 self.dual_state = State.SCATTER
                 self.dual_time_index += 1
             self.dual_timer.cancel()
+            self.dual_time_index = min(self.dual_time_index, 3)
             self.dual_timer.set_timeout(self.scatter_time_list[self.dual_time_index])
             self.dual_timer = MyTimer(
                 self.scatter_time_list[self.dual_time_index], self.switch_scatter_chase
@@ -109,10 +109,11 @@ class StateManager:
                 if ghost.get_current_state() == State.FRIGHTENED:
                     ghost.set_state(self.dual_state)
 
-            logger.debug("end_of_fright_timeout OK")
+            # logger.debug("end_of_fright_timeout OK")
             self.notify_pacman(self.notify_pacman_arg)
         else:
-            logger.debug("end_of_fright_timeout is None")
+            pass
+            # logger.debug("end_of_fright_timeout is None")
 
     def change_to_dead(self, ghost):
         if ghost.get_current_state() == State.FRIGHTENED:
@@ -123,7 +124,7 @@ class StateManager:
             ghost.set_state(State.IN_HOME)
 
             if self.last_pellet_timer is None:
-                logger.debug("change_to_in_home:: Creo LAST PELLET TIMER")
+                # logger.debug("change_to_in_home:: Creo LAST PELLET TIMER")
                 self.last_pellet_timer = MyTimer(
                     self.last_pellet_timeout, self.resurrect_by_timer
                 )
@@ -132,20 +133,21 @@ class StateManager:
     def reset_last_pellet_timer(self):
 
         if self.last_pellet_timer is not None:
-            logger.debug("reset_last_pellet_timer OK")
+            # logger.debug("reset_last_pellet_timer OK")
             self.last_pellet_timer.cancel()
             self.last_pellet_timer = MyTimer(
                 self.last_pellet_timeout, self.resurrect_by_timer
             )
             self.last_pellet_timer.start()
         else:
-            logger.debug("reset_last_pellet_timer is None")
+            pass
+            # logger.debug("reset_last_pellet_timer is None")
 
     def resurrect_by_timer(self):
         for index in range(0, len(self.ghosts)):
             if self.ghosts[index].get_current_state() == State.IN_HOME:
                 self.ghosts[index].set_state(self.dual_state)
-                logger.debug(f"{self.ghosts[index].name} resurrected by timer!")
+                # logger.debug(f"{self.ghosts[index].name} resurrected by timer!")
                 self.reset_last_pellet_timer()
                 return True
 
@@ -160,7 +162,7 @@ class StateManager:
                     >= self.pellet_ghost_counter_limits[index]
             ):
                 self.ghosts[index].set_state(self.dual_state)
-                logger.debug(f"{self.ghosts[index].name} resurrected by local limit!")
+                # logger.debug(f"{self.ghosts[index].name} resurrected by local limit!")
                 return True
         return False
 
@@ -172,9 +174,14 @@ class StateManager:
 
         for index in range(0, len(self.ghosts)):
             if self.ghosts[index].get_current_state() == State.IN_HOME:
-                if self.pellet_global_counter_value == self.pellet_global_counter_limits[index]:
+                if (
+                        self.pellet_global_counter_value
+                        == self.pellet_global_counter_limits[index]
+                ):
                     self.ghosts[index].set_state(self.dual_state)
-                    logger.debug(f"{self.ghosts[index].name} resurrected by global limit!")
+                    # logger.debug(
+                    #     f"{self.ghosts[index].name} resurrected by global limit!"
+                    # )
                     return True
 
         if self.last_pellet_timer is not None:
@@ -259,4 +266,3 @@ class StateManager:
             self.pellet_global_counter_value += amount
             self.resurrect_by_global_limit()
         # logger.debug(f"Couldn't update global pellet counter")
-

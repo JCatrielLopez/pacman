@@ -1,13 +1,17 @@
-import pygame as pg
 import logging
+
+import numpy as np
+import pygame as pg
+
 import pacman.constants as constants
-import pacman.display as display
 from pacman import scene
 
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(module)s:%(threadName)s:%(message)s")  # level=10
+logging.basicConfig(
+    level=logging.DEBUG, format="%(module)s:%(threadName)s:%(message)s"
+)  # level=10
 
-logger = logging.getLogger(name=None)
+logger = logging.getLogger()
+
 
 class Game:
     clock = None
@@ -22,13 +26,14 @@ class Game:
 
         self.clock = pg.time.Clock()
         self.display = display
-        self.scenes_path = [
-            "../res/map/01_level.npz",
-            "../res/map/02_level.npz",
-            "../res/map/03_level.npz",
-            "../res/map/04_level.npz",
-            "../res/map/05_level.npz",
-        ]
+        # self.scenes_path = [
+        #     "../res/map/01_level.npz",
+        #     "../res/map/02_level.npz",
+        #     "../res/map/03_level.npz",
+        #     "../res/map/04_level.npz",
+        #     "../res/map/05_level.npz",
+        # ]
+        self.scenes_path = ["../res/map/01_level.npz"]
 
     def __str__(self):
         return repr(self)
@@ -74,7 +79,6 @@ class Game:
                     if pg.key.get_pressed()[pg.K_f]:
                         filtered_events.append(event)
 
-
                 active_scene.process_input(filtered_events)
 
                 active_scene.render()
@@ -85,15 +89,31 @@ class Game:
                 break
 
 
-def main(display):
-    g = Game(display)
-    g.run()
+class GameEnv:
 
+    def __init__(self):
+        self.episode_step = 0
 
-if __name__ == "__main__":
-    # import cProfile
-    # dis = display.Display((constants.WIDTH, constants.HEIGHT))
-    # cProfile.run('main(dis)', sort="cumtime")
+        self.active_scene = scene.GameScene("../../res/map/01_level.npz")
+        self.active_scene.init_scene()
 
-    dis = display.Display((constants.WIDTH, constants.HEIGHT))
-    main(dis)
+    def render(self):
+        self.active_scene.render()
+
+    def step(self, action):
+        self.episode_step += 1
+
+        self.active_scene.process_action(action)
+
+        new_observation = np.array(self.active_scene.get_state())
+        reward = self.active_scene.get_reward()
+        done = self.active_scene.is_finish()
+
+        return new_observation, reward, done
+
+    def reset(self):
+        self.active_scene.terminate()
+        self.active_scene = scene.GameScene("../../res/map/01_level.npz")
+        self.active_scene.init_scene()
+
+        return np.array(self.active_scene.get_state())
