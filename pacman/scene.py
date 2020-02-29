@@ -2,10 +2,10 @@ import numpy as np
 import pygame as pg
 from PIL import Image
 
-import constants
-import ghost
 import pacman.display as display
 import pacman.map as map
+from pacman import constants
+from pacman.actors import ghost
 from pacman.actors.pacman import Pacman
 from pacman.actors.state_manager import StateManager
 
@@ -284,21 +284,30 @@ class GameScene:
 
     def get_state(self):
         state = np.zeros((28, 31, 3), dtype=np.uint8)  # starts an rbg of our size
+        for pellet in self.map.get_pellets():
+            grid_position = self.map.get_grid(pellet.get_pos())
+            state[grid_position[0]][grid_position[1]] = constants.WHITE
 
-        try:
-            for pellet in self.map.get_pellets():
-                grid_position = self.map.get_grid(pellet.get_pos())
-                state[grid_position[0]][grid_position[1]] = constants.WHITE
+        for wall in self.map.get_walls():
+            grid_position = self.map.get_grid(wall.get_pos())
+            state[grid_position[0]][grid_position[1]] = constants.DARK_GRAY
 
-            for ghost in self.ghosts:
-                grid_position = self.map.get_grid(ghost.get_pos())
-                state[grid_position[0]][grid_position[1]] = ghost.color
-        except IndexError:
-            pass
+        for ghost in self.ghosts:
+            grid_position = self.map.get_grid(ghost.get_pos())
+            x = min(grid_position[0], 27)
+            y = min(grid_position[1], 30)
+
+            state[x][y] = ghost.color
+
+        pacman_position = self.map.get_grid(self.pacman.get_pos())
+        x = min(pacman_position[0], 27)
+        y = min(pacman_position[1], 30)
+
+        state[x][y] = constants.YELLOW
 
         img = Image.fromarray(state)
         img = img.rotate(-90)
-
+        # img = ImageOps.grayscale(img)
         return img
 
     def get_reward(self):

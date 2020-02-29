@@ -1,93 +1,167 @@
+import logging
 import os
 import random
-import time
 
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from tensorflow.python.summary.summary_iterator import summary_iterator
 from tqdm import tqdm
 
-from dqn.Agent import DQNAgent
-from game import GameEnv
+from pacman.dqn.Agent import DQNAgent
+from pacman.game import GameEnv
 
-DISCOUNT = 0.99
-REPLAY_MEMORY_SIZE = 50_000  # How many last steps to keep for model training
-MINIBATCH_SIZE = 64  # How many steps (samples) to use for training
-UPDATE_TARGET_EVERY = 5  # Terminal states (end of episodes)
-MODEL_NAME = '2x256'
-MIN_REWARD = 0  # For model save
-MEMORY_FRACTION = 0.20
+logging.basicConfig(
+    filename="logs/logfile.log", format="%(levelname)s:%(name)s:%(message)s)"
+)
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
-# Environment settings
-EPISODES = 600
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-# Exploration settings
-epsilon = 1  # not a constant, going to be decayed
-EPSILON_DECAY = 0.99975
-MIN_EPSILON = 0.001
 
-#  Stats settings
-AGGREGATE_STATS_EVERY = 50
+class DQN:
+    def __init__(self, render):
+        self.model_name = "pacman-v1"
+        self.min_reward = 0
 
-# For stats
-ep_rewards = [-200]
+        self.episodes = 600
 
-# For more repetitive results
-random.seed(1)
-np.random.seed(1)
+        self.epsilon = 1
+        self.epsilon_decay = 0.99975
+        self.min_epsilon = 0.001
 
-# Create models folder
-if not os.path.isdir('models'):
-    os.makedirs('models')
+        self.aggregate_stats_every = 5
+        self.ep_rewards = [self.min_reward]
 
-agent = DQNAgent()
-env = GameEnv()
+        self.max_steps_per_episode = 2500
+        random.seed(21022020)
+        np.random.seed(21022020)
 
-# Iterate over episodes
-for episode in tqdm(range(1, EPISODES + 1), ascii=True, unit='episodes'):
+        if not os.path.isdir("models"):
+            os.makedirs("models")
 
-    agent.tensorboard.step = episode
+        if not os.path.isdir("logs"):
+            os.makedirs("logs")
 
-    episode_reward = 0
-    step = 1
+        self.agent = DQNAgent()
+        self.render_scene = render
+        self.env = GameEnv()
 
-    current_state = env.reset()
+    def run(self, show_metrics=False):
 
-    done = False
-    while not done:
-        # print(f"\rSteps: {step}", end='')
-        if np.random.random() > epsilon:
-            action = np.argmax(agent.get_qs(current_state))
-        else:
-            action = np.random.randint(0, agent.action_space)
+        metrics_df = pd.DataFrame(
+            index=[np.arange(0, self.episodes // self.aggregate_stats_every)],
+            columns=("episode", "avg_reward", "max_reward", "min_reward"),
+        )
+        row_index = 0
 
-        new_state, reward, done = env.step(action)
+        for episode in tqdm(range(1, self.episodes + 1), ascii=True, unit="episodes"):
 
-        episode_reward += reward
+            self.agent.tensorboard.step = episode
 
-        # env.render()
+            episode_reward = 0
+            step = 1
 
-        # print("update replay memory...")
-        agent.update_replay_memory((current_state, action, reward, new_state, done))
-        # print("training...")
-        agent.train(done, step)
+            current_state = self.env.reset()
 
-        current_state = new_state
-        step += 1
+            done = False
+            while not done:
+                if np.random.random() > self.epsilon:
+                    action = np.argmax(self.agent.get_qs(current_state))
+                else:
+                    action = np.random.randint(0, self.agent.action_space)
 
-    ep_rewards.append(episode_reward)
-    if not episode % AGGREGATE_STATS_EVERY or episode == 1:
+                new_state, reward, done = self.env.step(action)
 
-        average_reward = sum(ep_rewards[-AGGREGATE_STATS_EVERY:]) / len(ep_rewards[-AGGREGATE_STATS_EVERY:])
-        min_reward = min(ep_rewards[-AGGREGATE_STATS_EVERY:])
-        max_reward = max(ep_rewards[-AGGREGATE_STATS_EVERY:])
-        # print("update stats...")
-        agent.tensorboard.update_stats(reward_avg=average_reward, reward_min=min_reward, reward_max=max_reward,
-                                       epsilon=epsilon)
+                episode_reward += reward
 
-        if min_reward >= MIN_REWARD:
-            agent.model.save(
-                f'models/{MODEL_NAME}__{max_reward:_>7.2f}max_{average_reward:_>7.2f}avg_{min_reward:_>7.2f}min__{int(time.time())}.model')
+                if self.render_scene:
+                    self.env.render()
 
-    # Decay epsilon
-    if epsilon > MIN_EPSILON:
-        epsilon *= EPSILON_DECAY
-        epsilon = max(MIN_EPSILON, epsilon)
+                self.agent.update_replay_memory(
+                    (current_state, action, reward, new_state, done)
+                )
+
+                self.agent.train(done, step)
+
+                current_state = new_state
+                step += 1
+
+                done = done or (step >= self.max_steps_per_episode)
+
+            self.ep_rewards.append(episode_reward)
+            if not episode % self.aggregate_stats_every or episode == 1:
+
+                average_reward = sum(
+                    self.ep_rewards[-self.aggregate_stats_every:]
+                ) / len(self.ep_rewards[-self.aggregate_stats_every:])
+                min_reward = min(self.ep_rewards[-self.aggregate_stats_every:])
+                max_reward = max(self.ep_rewards[-self.aggregate_stats_every:])
+
+                metrics_df.iloc[row_index] = [
+                    episode,
+                    average_reward,
+                    max_reward,
+                    min_reward,
+                ]
+                row_index += 1
+
+                if show_metrics:
+                    plt.plot(
+                        "episode",
+                        "max_reward",
+                        data=metrics_df,
+                        marker="o",
+                        color="green",
+                        linewidth=2,
+                        label="max",
+                    )
+                    plt.plot(
+                        "episode",
+                        "avg_reward",
+                        data=metrics_df,
+                        marker="o",
+                        color="yellow",
+                        linewidth=3,
+                        label="avg",
+                    )
+                    plt.plot(
+                        "episode",
+                        "min_reward",
+                        data=metrics_df,
+                        marker="o",
+                        color="red",
+                        linewidth=2,
+                        label="min",
+                    )
+                    plt.legend()
+                    plt.show()
+
+                self.agent.tensorboard.update_stats(
+                    reward_avg=average_reward,
+                    reward_min=min_reward,
+                    reward_max=max_reward,
+                    epsilon=self.epsilon,
+                )
+
+                if average_reward >= self.min_reward:
+                    self.agent.model.save(
+                        f"models/{self.model_name}__{average_reward:_>7.2f}avg.model"
+                    )
+                    self.min_reward = average_reward
+
+            if self.epsilon > self.min_epsilon:
+                self.epsilon *= self.epsilon_decay
+                self.epsilon = max(self.min_epsilon, self.epsilon)
+
+    def get_metrics(self, path):
+        for summary in summary_iterator(path):
+            for v in summary.summary.value:
+                if v.tag == "loss" or v.tag == "accuracy":
+                    print(v.tag, ": ", v.simple_value)
+
+
+if __name__ == "__main__":
+    network = DQN(False)
+    network.run(show_metrics=True)

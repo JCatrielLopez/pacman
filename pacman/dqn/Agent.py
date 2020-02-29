@@ -59,8 +59,8 @@ class DQNAgent:
 
         self.action_space = 4
         self.lr = 0.1
-        self.replay_memory_min = 2500
-        self.batch_size = 500
+        self.replay_memory_min = 25000
+        self.batch_size = 100
 
         # Main model
         self.model = self.create_model()
@@ -109,7 +109,6 @@ class DQNAgent:
 
     def train(self, terminal_state, step):
 
-        # Start training only if certain number of samples is already saved
         if len(self.replay_memory) < self.replay_memory_min:
             return
 
@@ -138,7 +137,8 @@ class DQNAgent:
             X.append(current_state)
             y.append(current_qs)
 
-        self.model.fit(np.array(X) / 255, np.array(y), batch_size=self.batch_size, verbose=0, shuffle=False,
+        self.model.fit(np.array(X) / 255, np.array(y), batch_size=self.batch_size, verbose=0,
+                       shuffle=False,
                        callbacks=[self.tensorboard] if terminal_state else None)
 
         if terminal_state:

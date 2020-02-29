@@ -2,8 +2,8 @@ from threading import Lock
 
 import numpy as np
 
-import actor
-import constants
+from pacman import constants
+from pacman.actors import actor
 from pacman.actors.state import State
 
 
@@ -42,8 +42,8 @@ class Ghost(actor.MovingActor):
         self.spritesheet_path = spritesheet_path
         self.spritesheet_chase_path = spritesheet_chase_path
         self.spritesheet_scatter_path = spritesheet_scatter_path
-        self.spritesheet_dead_path = "../res/ghosts/State_dead"
-        self.spritesheet_frightened_path = "../res/ghosts/State_scared"
+        self.spritesheet_dead_path = "../../res/ghosts/State_dead"
+        self.spritesheet_frightened_path = "../../res/ghosts/State_scared"
 
     def back_direction(self, current_dir):
         return -current_dir[0], -current_dir[1]

@@ -96,6 +96,9 @@ class GameEnv:
 
         self.active_scene = scene.GameScene("../../res/map/01_level.npz")
         self.active_scene.init_scene()
+        self.active_scene.toggle_sprites()
+
+        self.frame_skip = 4
 
     def render(self):
         self.active_scene.render()
@@ -103,12 +106,15 @@ class GameEnv:
     def step(self, action):
         self.episode_step += 1
 
-        self.active_scene.process_action(action)
+        reward = 0
+        done = False
+
+        for _ in range(0, self.frame_skip):
+            self.active_scene.process_action(action)
+            reward += self.active_scene.get_reward()
+            done = self.active_scene.is_finish()
 
         new_observation = np.array(self.active_scene.get_state())
-        reward = self.active_scene.get_reward()
-        done = self.active_scene.is_finish()
-
         return new_observation, reward, done
 
     def reset(self):
