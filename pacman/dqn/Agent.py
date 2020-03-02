@@ -5,7 +5,7 @@ from collections import deque
 import numpy as np
 import tensorflow as tf
 from keras.callbacks import TensorBoard
-from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Conv2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.models import Sequential
 from keras.optimizers import Adam
@@ -58,7 +58,7 @@ class DQNAgent:
     def __init__(self):
 
         self.action_space = 4
-        self.lr = 0.1
+        self.lr = 0.05
         self.replay_memory_min = 25000
         self.batch_size = 100
 
@@ -78,30 +78,34 @@ class DQNAgent:
         self.replay_memory = deque(maxlen=50000)
 
         # Custom tensorboard object
-        self.tensorboard = ModifiedTensorBoard(log_dir="logs/{}".format(int(time.time())))
+        self.tensorboard = ModifiedTensorBoard(
+            log_dir="logs/{}".format(int(time.time()))
+        )
 
         # Used to count when to update target network with main network's weights
         self.target_update_counter = 0
+        self.history = None
 
     def create_model(self):
         model = Sequential()
 
-        model.add(Conv2D(256, (3, 3),
-                         input_shape=(28, 31, 3)))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Conv2D(16, 8, input_shape=(28, 31, 4)))
+        model.add(Activation("relu"))
         model.add(Dropout(0.2))
 
-        model.add(Conv2D(256, (3, 3)))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Conv2D(32, 4))
+        model.add(Activation("relu"))
         model.add(Dropout(0.2))
 
-        model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+        model.add(Flatten())
+
         model.add(Dense(64))
 
-        model.add(Dense(self.action_space, activation='linear'))
-        model.compile(loss="mse", optimizer=Adam(lr=self.lr), metrics=['accuracy'])
+        model.add(Dense(self.action_space, activation="linear"))
+
+        model.compile(
+            loss="mse", optimizer=Adam(lr=self.lr), metrics=["accuracy"]
+        )
         return model
 
     def update_replay_memory(self, transition):
@@ -111,19 +115,22 @@ class DQNAgent:
 
         if len(self.replay_memory) < self.replay_memory_min:
             return
-
+        print("Training!")
         minibatch = random.sample(self.replay_memory, 64)
 
-        current_states = np.array([transition[0] for transition in minibatch]) / 255
+        current_states = np.array([transition[0] for transition in minibatch])
         current_qs_list = self.model.predict(current_states)
 
-        new_current_states = np.array([transition[3] for transition in minibatch]) / 255
+        new_current_states = np.array([transition[3] for transition in minibatch])
         future_qs_list = self.target_model.predict(new_current_states)
 
         X = []
         y = []
 
-        for index, (current_state, action, reward, new_current_state, done) in enumerate(minibatch):
+        for (
+                index,
+                (current_state, action, reward, new_current_state, done),
+        ) in enumerate(minibatch):
 
             if not done:
                 max_future_q = np.max(future_qs_list[index])
@@ -137,9 +144,17 @@ class DQNAgent:
             X.append(current_state)
             y.append(current_qs)
 
-        self.model.fit(np.array(X) / 255, np.array(y), batch_size=self.batch_size, verbose=0,
-                       shuffle=False,
-                       callbacks=[self.tensorboard] if terminal_state else None)
+        self.history = self.model.fit(
+            np.array(X),
+            np.array(y),
+            validation_split=0.25,
+            batch_size=self.batch_size,
+            verbose=0,
+            shuffle=False,
+            callbacks=[self.tensorboard] if terminal_state else None,
+        )
+
+        self.get_plot()
 
         if terminal_state:
             self.target_update_counter += 1
@@ -149,4 +164,28 @@ class DQNAgent:
             self.target_update_counter = 0
 
     def get_qs(self, state):
-        return self.model.predict(np.array(state).reshape(-1, *state.shape) / 255)[0]
+        return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
+
+    def get_plot(self):
+        print("plotting")
+        import matplotlib.pyplot as plt
+        if self.history is not None:
+            print(self.history.history.keys())
+
+            plt.plot(self.history.history['accuracy'])
+            plt.plot(self.history.history['val_accuracy'])
+            plt.title('model accuracy')
+            plt.ylabel('accuracy')
+            plt.xlabel('epoch')
+            plt.legend(['train', 'test'], loc='upper left')
+            plt.show()
+
+            plt.plot(self.history.history['loss'])
+            plt.plot(self.history.history['val_loss'])
+            plt.title('model loss')
+            plt.ylabel('loss')
+            plt.xlabel('epoch')
+            plt.legend(['train', 'test'], loc='upper left')
+            plt.show()
+        else:
+            print("History None")

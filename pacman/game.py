@@ -90,7 +90,6 @@ class Game:
 
 
 class GameEnv:
-
     def __init__(self):
         self.episode_step = 0
 
@@ -108,18 +107,25 @@ class GameEnv:
 
         reward = 0
         done = False
-
+        obs = []
         for _ in range(0, self.frame_skip):
             self.active_scene.process_action(action)
             reward += self.active_scene.get_reward()
             done = self.active_scene.is_finish()
 
-        new_observation = np.array(self.active_scene.get_state())
-        return new_observation, reward, done
+            obs.append(np.array(self.active_scene.get_state()))
+
+        obs = np.stack(obs, axis=2)
+        return obs, reward, done
 
     def reset(self):
         self.active_scene.terminate()
         self.active_scene = scene.GameScene("../../res/map/01_level.npz")
         self.active_scene.init_scene()
 
-        return np.array(self.active_scene.get_state())
+        obs = []
+        for _ in range(0, self.frame_skip):
+            obs.append(np.array(self.active_scene.get_state()))
+
+        obs = np.stack(obs, axis=2)
+        return obs

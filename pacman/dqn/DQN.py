@@ -2,9 +2,7 @@ import logging
 import os
 import random
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from tensorflow.python.summary.summary_iterator import summary_iterator
 from tqdm import tqdm
 
@@ -21,11 +19,11 @@ logger.setLevel(logging.DEBUG)
 
 
 class DQN:
-    def __init__(self, render):
-        self.model_name = "pacman-v1"
+    def __init__(self, render, episodes=600, model_name=""):
+        self.model_name = model_name
         self.min_reward = 0
 
-        self.episodes = 600
+        self.episodes = episodes
 
         self.epsilon = 1
         self.epsilon_decay = 0.99975
@@ -50,10 +48,10 @@ class DQN:
 
     def run(self, show_metrics=False):
 
-        metrics_df = pd.DataFrame(
-            index=[np.arange(0, self.episodes // self.aggregate_stats_every)],
-            columns=("episode", "avg_reward", "max_reward", "min_reward"),
-        )
+        # metrics_df = pd.DataFrame(
+        #     index=[np.arange(0, self.episodes // self.aggregate_stats_every)],
+        #     columns=("episode", "avg_reward", "max_reward", "min_reward"),
+        # )
         row_index = 0
 
         for episode in tqdm(range(1, self.episodes + 1), ascii=True, unit="episodes"):
@@ -99,44 +97,16 @@ class DQN:
                 min_reward = min(self.ep_rewards[-self.aggregate_stats_every:])
                 max_reward = max(self.ep_rewards[-self.aggregate_stats_every:])
 
-                metrics_df.iloc[row_index] = [
-                    episode,
-                    average_reward,
-                    max_reward,
-                    min_reward,
-                ]
+                # metrics_df.iloc[row_index] = [
+                #     episode,
+                #     average_reward,
+                #     max_reward,
+                #     min_reward,
+                # ]
                 row_index += 1
 
-                if show_metrics:
-                    plt.plot(
-                        "episode",
-                        "max_reward",
-                        data=metrics_df,
-                        marker="o",
-                        color="green",
-                        linewidth=2,
-                        label="max",
-                    )
-                    plt.plot(
-                        "episode",
-                        "avg_reward",
-                        data=metrics_df,
-                        marker="o",
-                        color="yellow",
-                        linewidth=3,
-                        label="avg",
-                    )
-                    plt.plot(
-                        "episode",
-                        "min_reward",
-                        data=metrics_df,
-                        marker="o",
-                        color="red",
-                        linewidth=2,
-                        label="min",
-                    )
-                    plt.legend()
-                    plt.show()
+                # if show_metrics:
+                #     self.agent.get_plot()
 
                 self.agent.tensorboard.update_stats(
                     reward_avg=average_reward,
@@ -155,6 +125,9 @@ class DQN:
                 self.epsilon *= self.epsilon_decay
                 self.epsilon = max(self.min_epsilon, self.epsilon)
 
+            if episode % 100 == 0:
+                self.agent.model.save(f"models/{self.model_name}__{episode}ep.model")
+
     def get_metrics(self, path):
         for summary in summary_iterator(path):
             for v in summary.summary.value:
@@ -163,5 +136,6 @@ class DQN:
 
 
 if __name__ == "__main__":
-    network = DQN(False)
+    i = 600
+    network = DQN(False, i, f"pacman-e{i}")
     network.run(show_metrics=True)

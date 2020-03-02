@@ -1,6 +1,6 @@
 import numpy as np
 import pygame as pg
-from PIL import Image
+from PIL import Image, ImageOps
 
 import pacman.display as display
 import pacman.map as map
@@ -307,7 +307,7 @@ class GameScene:
 
         img = Image.fromarray(state)
         img = img.rotate(-90)
-        # img = ImageOps.grayscale(img)
+        img = ImageOps.grayscale(img)
         return img
 
     def get_reward(self):
