@@ -137,5 +137,6 @@ class DQN:
 
 if __name__ == "__main__":
     i = 600
-    network = DQN(False, i, f"pacman-e{i}")
+    network = DQN(False, i, f"pacman{i}")
     network.run(show_metrics=True)
+    network.agent.saveHist(f"models/pacman{i}/hist.json", network.agent.history)

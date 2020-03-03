@@ -1,10 +1,14 @@
+import os
+
+import matplotlib.pyplot as plt
 import random
 import time
+import json, codecs
 from collections import deque
 
 import numpy as np
 import tensorflow as tf
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, Callback
 from keras.layers import Conv2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.models import Sequential
@@ -112,10 +116,8 @@ class DQNAgent:
         self.replay_memory.append(transition)
 
     def train(self, terminal_state, step):
-
         if len(self.replay_memory) < self.replay_memory_min:
             return
-        print("Training!")
         minibatch = random.sample(self.replay_memory, 64)
 
         current_states = np.array([transition[0] for transition in minibatch])
@@ -144,7 +146,7 @@ class DQNAgent:
             X.append(current_state)
             y.append(current_qs)
 
-        self.history = self.model.fit(
+        history = self.model.fit(
             np.array(X),
             np.array(y),
             validation_split=0.25,
@@ -153,6 +155,8 @@ class DQNAgent:
             shuffle=False,
             callbacks=[self.tensorboard] if terminal_state else None,
         )
+
+        self.history = self.appendHist(self.history, history.history)
 
         self.get_plot()
 
@@ -167,11 +171,7 @@ class DQNAgent:
         return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
 
     def get_plot(self):
-        print("plotting")
-        import matplotlib.pyplot as plt
         if self.history is not None:
-            print(self.history.history.keys())
-
             plt.plot(self.history.history['accuracy'])
             plt.plot(self.history.history['val_accuracy'])
             plt.title('model accuracy')
@@ -189,3 +189,23 @@ class DQNAgent:
             plt.show()
         else:
             print("History None")
+
+    def saveHist(self, path, history):
+        with codecs.open(path, 'w', encoding='utf-8') as f:
+            json.dump(history, f, separators=(',', ':'), sort_keys=True, indent=4)
+
+    def loadHist(self, path):
+        n = {}  # set history to empty
+        if os.path.exists(path):  # reload history if it exists
+            with codecs.open(path, 'r', encoding='utf-8') as f:
+                n = json.loads(f.read())
+        return n
+
+    def appendHist(self, h1, h2):
+        if h1 is None:
+            return h2
+        else:
+            dest = {}
+            for key, value in h1.items():
+                dest[key] = value + h2[key]
+            return dest

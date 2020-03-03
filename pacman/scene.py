@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pygame as pg
 from PIL import Image, ImageOps
@@ -25,6 +27,7 @@ class GameScene:
 
     def __init__(self, path):
         self.finish = False
+        os.environ["SDL_VIDEODRIVER"] = "dummy"
         self.display = display.Display((constants.WIDTH, constants.HEIGHT))
         self.high_score_text = "HIGH SCORE: 0"
         self.score_text = "SCORE: 0"
