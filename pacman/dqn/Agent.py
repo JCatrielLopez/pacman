@@ -158,12 +158,11 @@ class DQNAgent:
 
         self.history = self.appendHist(self.history, history.history)
 
-        self.get_plot()
 
         if terminal_state:
             self.target_update_counter += 1
 
-        if self.target_update_counter > 5:
+        if self.target_update_counter > 10:
             self.target_model.set_weights(self.model.get_weights())
             self.target_update_counter = 0
 
@@ -172,16 +171,16 @@ class DQNAgent:
 
     def get_plot(self):
         if self.history is not None:
-            plt.plot(self.history.history['accuracy'])
-            plt.plot(self.history.history['val_accuracy'])
+            plt.plot(self.history['accuracy'])
+            plt.plot(self.history['val_accuracy'])
             plt.title('model accuracy')
             plt.ylabel('accuracy')
             plt.xlabel('epoch')
             plt.legend(['train', 'test'], loc='upper left')
             plt.show()
 
-            plt.plot(self.history.history['loss'])
-            plt.plot(self.history.history['val_loss'])
+            plt.plot(self.history['loss'])
+            plt.plot(self.history['val_loss'])
             plt.title('model loss')
             plt.ylabel('loss')
             plt.xlabel('epoch')

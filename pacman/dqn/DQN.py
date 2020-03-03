@@ -90,6 +90,7 @@ class DQN:
 
             self.ep_rewards.append(episode_reward)
             if not episode % self.aggregate_stats_every or episode == 1:
+                # self.agent.get_plot()
 
                 average_reward = sum(
                     self.ep_rewards[-self.aggregate_stats_every:]
