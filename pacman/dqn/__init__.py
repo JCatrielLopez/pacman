@@ -14,14 +14,12 @@ class Game:
 
         if not os.path.isdir("replay"):
             os.makedirs("replay")
-            self.replay_memory = []
-        else:
-            with open("replay/replay_memory.pkl", 'rb') as f:  # TODO Jugar y subirlo para agregar mas datos.
-                self.replay_memory = pickle.load(f)
+        self.replay_memory = []
 
     def save_replay_memory(self):
-        with open('replay/replay_memory.pkl', 'ab') as f:  # TODO Probar si se puede hacer el append con ab!
-            pickle.dump(self.replay_memory, f, protocol=pickle.HIGHEST_PROTOCOL)
+        with open('replay/replay_memory.pkl', 'ab') as f:
+            for i in self.replay_memory:
+                pickle.dump(i, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def run(self):
         for _ in range(0, self.episodes):
@@ -61,5 +59,9 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game(episodes=10)
-    game.run()
+    import cProfile
+
+    game = Game(episodes=1)
+
+    cProfile.run('game.run()')
+    # game.run()
