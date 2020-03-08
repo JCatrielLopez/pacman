@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pygame as pg
 from PIL import Image, ImageOps
@@ -27,7 +25,7 @@ class GameScene:
 
     def __init__(self, path):
         self.finish = False
-        os.environ["SDL_VIDEODRIVER"] = "dummy"
+        # os.environ["SDL_VIDEODRIVER"] = "dummy"
         self.display = display.Display((constants.WIDTH, constants.HEIGHT))
         self.high_score_text = "HIGH SCORE: 0"
         self.score_text = "SCORE: 0"
@@ -199,21 +197,19 @@ class GameScene:
         self.display.toggle_sprites()
 
     def process_action(self, action):
-        # print("Movement: ", self.pacman_moves[action])
-        # self.pacman_moves[action]()
         if action == 0:
             self.pacman.move_up()
         elif action == 1:
             self.pacman.move_left()
         elif action == 2:
             self.pacman.move_down()
-        else:
+        elif action == 3:
             self.pacman.move_right()
 
-        self.clock.tick(constants.FPS)
         return self.update()
 
     def update(self):
+
         self.pacman.move()
 
         for ghost in self.ghosts:
@@ -240,7 +236,7 @@ class GameScene:
                         self.state_manager.update_pellet_ghost_counter(False)
 
             self.state_manager.check_collision(ghosts_collided)
-        elif not self.pacman_ate:
+        elif not self.pacman_ate:  # TODO Ver como poner las rewards bien, asi es medio sida. Tambien ver si conviene aplicar el log.
             self.reward = 0
         else:
             if self.pacman_energizer:
@@ -286,7 +282,7 @@ class GameScene:
         )
 
     def get_state(self):
-        state = np.zeros((28, 31, 3), dtype=np.uint8)  # starts an rbg of our size
+        state = np.zeros((32, 32, 3), dtype=np.uint8)
         for pellet in self.map.get_pellets():
             grid_position = self.map.get_grid(pellet.get_pos())
             state[grid_position[0]][grid_position[1]] = constants.WHITE

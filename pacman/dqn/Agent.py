@@ -1,14 +1,14 @@
+import codecs
+import json
 import os
-
-import matplotlib.pyplot as plt
 import random
 import time
-import json, codecs
 from collections import deque
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from keras.callbacks import TensorBoard, Callback
+from keras.callbacks import TensorBoard
 from keras.layers import Conv2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.models import Sequential
@@ -93,7 +93,7 @@ class DQNAgent:
     def create_model(self):
         model = Sequential()
 
-        model.add(Conv2D(16, 8, input_shape=(28, 31, 4)))
+        model.add(Conv2D(16, 8, input_shape=(32, 32, 4)))
         model.add(Activation("relu"))
         model.add(Dropout(0.2))
 
@@ -118,6 +118,7 @@ class DQNAgent:
     def train(self, terminal_state, step):
         if len(self.replay_memory) < self.replay_memory_min:
             return
+
         minibatch = random.sample(self.replay_memory, 64)
 
         current_states = np.array([transition[0] for transition in minibatch])
@@ -157,7 +158,6 @@ class DQNAgent:
         )
 
         self.history = self.appendHist(self.history, history.history)
-
 
         if terminal_state:
             self.target_update_counter += 1
