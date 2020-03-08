@@ -85,12 +85,15 @@ class Ghost(actor.MovingActor):
 
         elif self.get_current_state() == State.DEAD:
             self.set_spritesheet(self.spritesheet_dead_path)
+            self.color = constants.PURPLE
 
         elif self.get_current_state() == State.FRIGHTENED:
             self.set_spritesheet(self.spritesheet_frightened_path)
+            self.color = constants.BLUE
 
         elif self.state.get_current_state() == State.IN_HOME:
             self.set_spritesheet(self.spritesheet_path)
+            self.color = constants.LIGHT_PINK
 
     def can_be_frightened(self):
         return self.state.can_be_frightened()

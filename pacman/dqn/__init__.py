@@ -18,8 +18,7 @@ class Game:
 
     def save_replay_memory(self):
         with open('replay/replay_memory.pkl', 'ab') as f:
-            for i in self.replay_memory:
-                pickle.dump(i, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.replay_memory, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def run(self):
         for _ in range(0, self.episodes):
@@ -59,9 +58,7 @@ class Game:
 
 
 if __name__ == "__main__":
-    import cProfile
+    game = Game(episodes=10)
 
-    game = Game(episodes=1)
-
-    cProfile.run('game.run()')
-    # game.run()
+    # cProfile.run('game.run()')
+    game.run()

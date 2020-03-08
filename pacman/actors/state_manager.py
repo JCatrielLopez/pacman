@@ -200,9 +200,13 @@ class StateManager:
         self.last_pellet_timer.start()
 
     def check_collision(self, ghost_collided):
+        out = False
         for ghost in ghost_collided:
             if ghost.get_current_state() == State.FRIGHTENED:
                 ghost.set_state(State.DEAD)
+                out = True
+
+        return out
 
     def restart(self):
         self.dual_state = State.SCATTER

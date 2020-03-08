@@ -235,8 +235,11 @@ class GameScene:
                         self.state_manager.update_pellet_global_counter(True)
                         self.state_manager.update_pellet_ghost_counter(False)
 
-            self.state_manager.check_collision(ghosts_collided)
-        elif not self.pacman_ate:  # TODO Ver como poner las rewards bien, asi es medio sida. Tambien ver si conviene aplicar el log.
+            ghost_consumed_ghost = self.state_manager.check_collision(ghosts_collided)
+
+            if ghost_consumed_ghost:
+                self.reward = 100
+        elif not self.pacman_ate:
             self.reward = 0
         else:
             if self.pacman_energizer:
@@ -245,7 +248,7 @@ class GameScene:
                 self.reward = 100
 
         self.update_texts()
-
+        self.clock.tick(constants.FPS)
         return exists_collision, self.get_score()
 
     def is_level_done(self):
@@ -304,12 +307,12 @@ class GameScene:
 
         state[x][y] = constants.YELLOW
 
-        img = Image.fromarray(state)
-        img = img.rotate(-90)
+        img = Image.fromarray(state).rotate(-90)
         img = ImageOps.grayscale(img)
         return img
 
     def get_reward(self):
         r = self.reward
+        r = np.sign(r) * np.log(1 + abs(r))
         self.reward = 0
         return r
