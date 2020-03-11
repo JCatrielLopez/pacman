@@ -58,7 +58,17 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game(episodes=10)
+    game = Game(episodes=1)
 
     # cProfile.run('game.run()')
     game.run()
+
+    # TODO Consultar:
+    #
+    # Comparar DQN (NATURE 2015) con DQNfD. Vale la pena aplicar demostraciones?
+    #   Si aplicamos DQNfD, lo hacemos aplicando prioridad a las experiencias humanas? (ICLR 2016)
+    #   El modelo esta bien armado?
+    # No pasa nada si la imagen no esta centrada?
+    # Aplicamos la escala logaritmica a las rewards como DQNfD? Cual es el beneficio, bien explicado.
+    # Que metricas sacar y graficar? (acc, val_acc, loss y val_loss?)
+    # Que pasa si tarda siglos en entrenar?

@@ -105,14 +105,14 @@ class Ghost(actor.MovingActor):
         return self.state.can_be_ignored()
 
     def set_state(self, st):
-        self.threadLock.acquire(blocking=True)
+        # self.threadLock.acquire(blocking=True)
         # logger.debug(f"{self.name} -> set_state({st})")
         if self.state.current_state == State.IN_HOME:
             self.teleport(self.home_door_position)
 
         self.state.update_state(st)
         self.update_spritesheet()
-        self.threadLock.release()
+        # self.threadLock.release()
 
 
 class Blinky(Ghost):

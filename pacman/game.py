@@ -17,8 +17,8 @@ class GameEnv:
     def __init__(self):
         self.episode_step = 0
 
-        self.active_scene = scene.GameScene("../../res/map/01_level.npz")
-        self.active_scene.init_scene()
+        # self.active_scene = scene.GameScene("../../res/map/01_level.npz")
+        # self.active_scene.init_scene()
         # self.active_scene.toggle_sprites()
 
         self.frame_skip = 4
@@ -44,7 +44,7 @@ class GameEnv:
         return obs, reward, done
 
     def reset(self):
-        self.active_scene.terminate()
+        # self.active_scene.terminate()
         self.active_scene = scene.GameScene("../../res/map/01_level.npz")
         self.active_scene.init_scene()
 
