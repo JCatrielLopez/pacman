@@ -26,7 +26,8 @@ class StateManager:
 
     def __init__(self):
 
-        self.ghosts = Manager().list()
+        # self.ghosts = Manager().list()
+        self.ghosts = None
 
         self.scatter_time_list = [7.0, 7.0, 5.0, 5.0]
         self.chase_time_list = [20.0, 20.0, 20.0, 20.0]
@@ -36,7 +37,7 @@ class StateManager:
         self.dual_timer = ClockTimer(interval=self.scatter_time_list[self.dual_time_index],
                                      target_function=self.switch_scatter_chase, name="Dual timer")
 
-        self.frightened_timer: ClockTimer = None
+        self.frightened_timer = None
         self.frightened_timeout = 6
         self.notify_pacman = None
         self.notify_pacman_arg = None
@@ -58,20 +59,24 @@ class StateManager:
         self.last_pellet_timer.start()
 
     def set_ghosts(self, ghosts):
-        self.ghosts = Manager().list(ghosts)
+        self.ghosts = ghosts
         self.ghosts.sort(key=lambda x: x.priority)
 
     def switch_scatter_chase(self):
+        print(f"dual time index: {self.dual_time_index}")
         if self.ghosts is not None:
             if self.dual_state == State.SCATTER:
                 self.dual_state = State.CHASE
                 self.dual_timer.set_interval(self.chase_time_list[self.dual_time_index])
+                print(f"new interval: {self.chase_time_list[self.dual_time_index]}")
             else:
                 if self.dual_time_index <= 3:
                     self.dual_state = State.SCATTER
                     self.dual_time_index += 1
-                self.dual_timer.set_interval(self.scatter_time_list[self.dual_time_index])
-
+                    self.dual_timer.set_interval(self.scatter_time_list[self.dual_time_index])
+                    print(f"new interval: {self.scatter_time_list[self.dual_time_index]}")
+                else:
+                    print("sigo en chase")
             for ghost in self.ghosts:
                 if not ghost.can_be_ignored():
                     ghost.set_state(self.dual_state)
@@ -84,18 +89,19 @@ class StateManager:
                 if ghost.can_be_frightened():
                     ghost.set_state(State.FRIGHTENED)
 
-            if self.frightened_timer is not None:
-                self.frightened_timer.resume()
-            else:
-                self.frightened_timer = ClockTimer(interval=self.frightened_timeout,
+            # if self.frightened_timer is not None:
+            #     self.frightened_timer.resume()
+            # else:
+            self.frightened_timer = ClockTimer(interval=self.frightened_timeout,
                                                    target_function=self.end_of_fright_timeout,
                                                    name="Frightened timer")
-                self.frightened_timer.start()
+            self.frightened_timer.start()
 
     def end_of_fright_timeout(self):
         if self.ghosts is not None:
             if self.frightened_timer is not None:
-                self.frightened_timer.pause(update_timeout=False)
+                # self.frightened_timer.pause(update_timeout=False)
+                self.frightened_timer.cancel()
                 self.dual_timer.resume()
 
                 for ghost in self.ghosts:
@@ -112,12 +118,12 @@ class StateManager:
         if ghost.get_current_state() == State.DEAD:
             ghost.set_state(State.IN_HOME)
 
-            if self.last_pellet_timer is None:
+            if self.last_pellet_timer is not None:
                 self.last_pellet_timer.resume()
 
     def reset_last_pellet_timer(self):
 
-        if self.last_pellet_timer is not None:
+        if self.last_pellet_timer is not None and not self.last_pellet_timer.is_paused():
             self.last_pellet_timer.pause(update_timeout=False)
         else:
             pass
@@ -164,7 +170,7 @@ class StateManager:
                         # )
                         return True
 
-            if self.last_pellet_timer is not None:
+            if self.last_pellet_timer is not None and not self.last_pellet_timer.is_paused():
                 self.last_pellet_timer.pause(update_timeout=False)
             return False
 
