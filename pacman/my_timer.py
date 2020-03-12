@@ -93,6 +93,14 @@ class ClockTimer(threading.Thread):
 
             self.lock.acquire()
 
+
+    def remaining_time(self):
+        return int(time.perf_counter() - self.last_tick)
+
+    def set_timeout(self, timeout):
+        self.timeout = timeout
+
+
     def resume(self):
         try:
             self.paused = False
@@ -109,8 +117,9 @@ class ClockTimer(threading.Thread):
         print("Cancel: ", self.name)
         self.alive = False
 
-    def is_paused(self):
-        return self.paused
+
+    def is_alive(self):
+        return self.alive
 
 
 class MyTimer:

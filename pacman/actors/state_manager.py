@@ -87,19 +87,20 @@ class StateManager:
                 if ghost.can_be_frightened():
                     ghost.set_state(State.FRIGHTENED)
 
-            # if self.frightened_timer is not None:
-            #     self.frightened_timer.resume()
-            # else:
-            self.frightened_timer = ClockTimer(interval=self.frightened_timeout,
+            if self.frightened_timer is not None:
+                self.frightened_timer.set_timeout(self.frightened_timeout + self.frightened_timer.remaining_time())
+            else:
+                self.frightened_timer = ClockTimer(interval=self.frightened_timeout,
                                                    target_function=self.end_of_fright_timeout,
                                                    name="Frightened timer")
-            self.frightened_timer.start()
+                self.frightened_timer.start()
 
     def end_of_fright_timeout(self):
         if self.ghosts is not None:
             if self.frightened_timer is not None:
                 # self.frightened_timer.pause(update_timeout=False)
                 self.frightened_timer.cancel()
+                self.frightened_timer = None
                 self.dual_timer.resume()
 
                 for ghost in self.ghosts:
@@ -116,10 +117,11 @@ class StateManager:
         if ghost.get_current_state() == State.DEAD:
             ghost.set_state(State.IN_HOME)
 
-            self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout,
-                                                target_function=self.resurrect_by_timer,
-                                                name="Last pellet timer")
-            self.last_pellet_timer.start()
+            if self.last_pellet_timer is None:
+                self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout,
+                                                    target_function=self.resurrect_by_timer,
+                                                    name="Last pellet timer")
+                self.last_pellet_timer.start()
 
     def resurrect_by_timer(self):
 
@@ -197,7 +199,7 @@ class StateManager:
         self.pellet_global_counter_value = 0
         self.pellet_global_counter = False
 
-        if self.last_pellet_timer is not None:
+        if self.last_pellet_timer.is_alive():
             self.last_pellet_timer.cancel()
 
         self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout, target_function=self.resurrect_by_timer,
@@ -242,3 +244,4 @@ class StateManager:
     def reset_last_pellet_timer(self):
         if self.last_pellet_timer.is_alive():
             self.last_pellet_timer.cancel()
+            self.last_pellet_timer = None
