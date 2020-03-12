@@ -1,5 +1,3 @@
-from multiprocessing import Manager
-
 from pacman.actors.state import State
 from pacman.my_timer import ClockTimer
 
@@ -118,15 +116,10 @@ class StateManager:
         if ghost.get_current_state() == State.DEAD:
             ghost.set_state(State.IN_HOME)
 
-            if self.last_pellet_timer is not None:
-                self.last_pellet_timer.resume()
-
-    def reset_last_pellet_timer(self):
-
-        if self.last_pellet_timer is not None and not self.last_pellet_timer.is_paused():
-            self.last_pellet_timer.pause(update_timeout=False)
-        else:
-            pass
+            self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout,
+                                                target_function=self.resurrect_by_timer,
+                                                name="Last pellet timer")
+            self.last_pellet_timer.start()
 
     def resurrect_by_timer(self):
 
@@ -137,7 +130,7 @@ class StateManager:
                     self.reset_last_pellet_timer()
                     return True
 
-            self.last_pellet_timer.pause(update_timeout=False)
+            self.reset_last_pellet_timer()
             return False
 
     def resurrect_by_limit(self, index):
@@ -170,8 +163,7 @@ class StateManager:
                         # )
                         return True
 
-            if self.last_pellet_timer is not None and not self.last_pellet_timer.is_paused():
-                self.last_pellet_timer.pause(update_timeout=False)
+            self.reset_last_pellet_timer()
             return False
 
     def set_global_counter(self, value):
@@ -218,7 +210,7 @@ class StateManager:
         if self.dual_timer is not None:
             self.dual_timer.cancel()
         if self.last_pellet_timer is not None:
-            self.last_pellet_timer.cancel()
+            self.reset_last_pellet_timer()
 
     def get_global_counter_value(self):
         return self.pellet_global_counter_value
@@ -246,3 +238,7 @@ class StateManager:
         if self.pellet_global_counter:
             self.pellet_global_counter_value += amount
             self.resurrect_by_global_limit()
+
+    def reset_last_pellet_timer(self):
+        if self.last_pellet_timer.is_alive():
+            self.last_pellet_timer.cancel()
