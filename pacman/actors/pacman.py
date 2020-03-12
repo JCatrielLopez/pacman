@@ -54,7 +54,7 @@ class Pacman(actor.MovingActor):
         self.notify_scores = notify_scores
         self.notify_lives = notify_lives
         self.notify_pellets_in_map_change = notify_pellets_in_map_change
-
+        self.double_move_counter = 0
         self.visited_positions = []
 
     def check_collision_pellets(self, pellet_list):
@@ -126,10 +126,8 @@ class Pacman(actor.MovingActor):
         return self.current_map.get_grid(pos) in self.visited_positions
 
     def move(self):
-        old_grid = self.current_map.get_grid(self.get_pos())
+        self.double_move_counter += 1
+        self.double_move_counter = self.double_move_counter % 3
+        if self.power_up and self.double_move_counter == 0:
+            super().move()
         super().move()
-        new_grid = self.current_map.get_grid(self.get_pos())
-
-        if old_grid != new_grid:
-            if old_grid not in self.visited_positions:
-                self.visited_positions.append(old_grid)
