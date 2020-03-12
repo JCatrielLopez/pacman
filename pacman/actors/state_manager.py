@@ -199,7 +199,7 @@ class StateManager:
         self.pellet_global_counter_value = 0
         self.pellet_global_counter = False
 
-        if self.last_pellet_timer.is_alive():
+        if self.last_pellet_timer is not None:
             self.last_pellet_timer.cancel()
 
         self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout, target_function=self.resurrect_by_timer,
@@ -242,6 +242,6 @@ class StateManager:
             self.resurrect_by_global_limit()
 
     def reset_last_pellet_timer(self):
-        if self.last_pellet_timer.is_alive():
+        if self.last_pellet_timer is not None:
             self.last_pellet_timer.cancel()
             self.last_pellet_timer = None

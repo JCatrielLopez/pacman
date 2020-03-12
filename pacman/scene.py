@@ -163,6 +163,8 @@ class GameScene:
         )
         self.display.render_text(self.lives_text, False, constants.WHITE, (421, 510))
         self.display.render_text(self.score_text, False, constants.WHITE, (198, 510))
+        self.display.render_text(self.global_pellets_text, False, constants.YELLOW, (15, 530))
+        self.display.render_text(self.ghost_counter, False, constants.YELLOW, (15, 550))
         self.display.update()
 
     def get_score(self):

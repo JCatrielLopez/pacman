@@ -3,57 +3,6 @@ import time
 from threading import Timer as ThreadTimer
 
 
-# class ClockTimer(multiprocessing.Process):
-#     def __init__(self, interval=10, target_function=None, name=None):
-#         super().__init__(name=name, group=None)
-#         self.paused = False
-#         self.pause_cond = threading.Condition(threading.RLock())
-#         self.interval = interval
-#         self.timeout = self.interval
-#         self.target_function = target_function
-#         self.last_tick = None
-#         self.alive = True
-#
-#     def run(self):
-#         self.last_tick = time.perf_counter()
-#
-#         while self.alive:
-#             with self.pause_cond:
-#                 while self.paused:
-#                     self.pause_cond.wait()
-#
-#                 t = time.perf_counter()
-#                 if not self.paused:
-#                     if int(t - self.last_tick) >= self.timeout:
-#                         print(f"\n{self.name} -> {time.ctime()}")
-#                         self.target_function()
-#                         self.last_tick = t
-#                         self.timeout = int(self.interval)
-#
-#     def pause(self, update_timeout=True):
-#         self.paused = True
-#
-#         if update_timeout:
-#             self.timeout = int(time.perf_counter() - self.last_tick)
-#
-#         self.pause_cond.acquire()
-#
-#     def resume(self):
-#         try:
-#             self.paused = False
-#             self.last_tick = time.perf_counter()
-#             self.pause_cond.notify()
-#             self.pause_cond.release()
-#         except RuntimeError:
-#             pass
-#
-#     def set_interval(self, interval):
-#         self.interval = interval
-#
-#     def cancel(self):
-#         self.alive = False
-
-
 class ClockTimer(threading.Thread):
     def __init__(self, interval=10, target_function=None, name=None):
         threading.Thread.__init__(self, name=name)
