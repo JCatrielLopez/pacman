@@ -18,18 +18,21 @@ class ClockTimer(threading.Thread):
         self.last_tick = time.perf_counter()
 
         while self.alive:
-            with self.lock:
-                while self.paused:
-                    self.lock.wait()
+            try:
+                with self.lock:
+                    while self.paused:
+                        self.lock.wait()
 
-                t = time.perf_counter()
-                if not self.paused:
-                    if int(t - self.last_tick) >= self.timeout:
-                        print(f"\n{self.name} -> {time.ctime()}")
-                        self.target()
-                        self.last_tick = t
-                        self.timeout = int(self.interval)
-                time.sleep(1)
+                    t = time.perf_counter()
+                    if not self.paused:
+                        if int(t - self.last_tick) >= self.timeout:
+                            print(f"\n{self.name} -> {time.ctime()}")
+                            self.target()
+                            self.last_tick = t
+                            self.timeout = int(self.interval)
+                    time.sleep(1)
+            except RuntimeError:
+                print(f"\n{self.name} -> release unlocked lock")
 
     def pause(self, update_timeout=True):
         if not self.paused:

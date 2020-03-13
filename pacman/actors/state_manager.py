@@ -71,10 +71,9 @@ class StateManager:
                 if self.dual_time_index <= 3:
                     self.dual_state = State.SCATTER
                     self.dual_time_index += 1
-                    self.dual_timer.set_interval(self.scatter_time_list[self.dual_time_index])
-                    print(f"new interval: {self.scatter_time_list[self.dual_time_index]}")
-                else:
-                    print("sigo en chase")
+                self.dual_timer.set_interval(self.scatter_time_list[self.dual_time_index])
+                print(f"new interval: {self.scatter_time_list[self.dual_time_index]}")
+
             for ghost in self.ghosts:
                 if not ghost.can_be_ignored():
                     ghost.set_state(self.dual_state)
