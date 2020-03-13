@@ -122,6 +122,8 @@ class StateManager:
                                                     target_function=self.resurrect_by_timer,
                                                     name="Last pellet timer")
                 self.last_pellet_timer.start()
+            else:
+                self.last_pellet_timer.resume()
 
     def resurrect_by_timer(self):
 
@@ -242,6 +244,17 @@ class StateManager:
             self.resurrect_by_global_limit()
 
     def reset_last_pellet_timer(self):
-        if self.last_pellet_timer is not None:
+        if self.remaining_ghosts_in_home() is False and self.last_pellet_timer is not None:
             self.last_pellet_timer.cancel()
             self.last_pellet_timer = None
+        else:
+            if self.last_pellet_timer is not None:
+                self.last_pellet_timer.set_timeout(self.last_pellet_timeout)
+                # self.last_pellet_timer = None
+
+    def remaining_ghosts_in_home(self):
+        if self.ghosts is not None:
+            for index in range(0, len(self.ghosts)):
+                if self.ghosts[index].get_current_state() == State.IN_HOME:
+                    return True
+            return False

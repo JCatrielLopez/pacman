@@ -42,13 +42,12 @@ class ClockTimer(threading.Thread):
 
             self.lock.acquire()
 
-
     def remaining_time(self):
         return int(time.perf_counter() - self.last_tick)
 
     def set_timeout(self, timeout):
         self.timeout = timeout
-
+        self.last_tick = time.perf_counter()
 
     def resume(self):
         try:
@@ -66,9 +65,6 @@ class ClockTimer(threading.Thread):
         print("Cancel: ", self.name)
         self.alive = False
 
-
-    def is_alive(self):
-        return self.alive
 
 
 class MyTimer:
