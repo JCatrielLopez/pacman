@@ -233,6 +233,7 @@ class GameScene:
                         self.state_manager.update_pellet_global_counter(True)
                         self.state_manager.update_pellet_ghost_counter(False)
 
+
             ghost_consumed_ghost = self.state_manager.check_collision(ghosts_collided)
 
             if ghost_consumed_ghost:

@@ -121,9 +121,6 @@ class Pacman(actor.MovingActor):
         self.restart_position()
         self.set_power_up(False)
 
-    def visited_position(self, pos):
-        return self.current_map.get_grid(pos) in self.visited_positions
-
     def move(self):
         self.double_move_counter += 1
         self.double_move_counter = self.double_move_counter % 3

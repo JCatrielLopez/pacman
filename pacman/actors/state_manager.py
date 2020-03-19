@@ -184,7 +184,7 @@ class StateManager:
     def set_notify_pacman(self, function, argument):
         self.notify_pacman = function
         self.notify_pacman_arg = argument
-
+        
     def check_collision(self, ghost_collided):
         out = False
         for ghost in ghost_collided:
@@ -193,7 +193,6 @@ class StateManager:
                 out = True
 
         return out
-
     def restart(self):
         self.dual_state = State.SCATTER
         self.dual_timer.cancel()
