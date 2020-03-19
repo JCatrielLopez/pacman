@@ -27,6 +27,8 @@ class Game:
                     action = 2
                 if pg.key.get_pressed()[pg.K_RIGHT]:
                     action = 3
+                if pg.key.get_pressed()[pg.K_h]:
+                    self.env.active_scene.toggle_sprites()
 
                 self.env.active_scene.process_action(action)
 
@@ -34,9 +36,6 @@ class Game:
                     self.env.render()
 
         self.env.close()
-
-    def update_replay_memory(self, param):
-        self.replay_memory.append(param)
 
 
 if __name__ == "__main__":
