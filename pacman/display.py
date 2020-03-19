@@ -22,7 +22,6 @@ class Display:
         pg.font.init()
         self.font = pg.font.SysFont("default", 20, bold=False)
 
-        # self.groups = []
         self.static_sprites = []
         self.moving_sprites = []
 
@@ -33,14 +32,6 @@ class Display:
         if not hasattr(cls, "instance"):
             cls.instance = super(Display, cls).__new__(cls)
         return cls.instance
-
-    # def add(self, group):
-    #     if isinstance(group, pg.sprite.Group):
-    #         return self.groups.append(group)
-    #
-    # def remove(self, group):
-    #     if isinstance(group, pg.sprite.Group):
-    #         self.groups.remove(group)
 
     def add_static_sprites(self, group):
         if isinstance(group, pg.sprite.Group):

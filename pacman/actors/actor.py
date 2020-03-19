@@ -1,6 +1,7 @@
 import pygame as pg
 
-from .. import constants, spritesheet as sp
+from pacman import constants
+from pacman import spritesheet as sp
 
 
 class Actor(pg.sprite.Sprite):
@@ -52,7 +53,6 @@ class MovingActor(Actor):
         self.direction = constants.LEFT
 
     def set_spritesheet(self, path):
-        # print("Path: ", path)
         coord = []
         sprites_dim = constants.TILE_SIZE * 2
         for i in range(8):
@@ -152,10 +152,10 @@ class MovingActor(Actor):
 
     def check_limits(self):
 
-        if self.rect.x == -constants.TILE_SIZE:
+        if self.rect.x == -(constants.TILE_SIZE // 2):
             self.rect.x = constants.TILE_SIZE * constants.COLS
         if self.rect.x == (constants.COLS + 1) * constants.TILE_SIZE:
-            self.rect.x = -constants.TILE_SIZE
+            self.rect.x = 0
 
     def adjust_movement(self):
 

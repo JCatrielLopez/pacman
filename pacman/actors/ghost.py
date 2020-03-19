@@ -1,16 +1,16 @@
-import logging
 from threading import Lock
 
 import numpy as np
 
+from pacman import constants
+from pacman.actors import actor
 from pacman.actors.state import State
-from . import actor
-from .. import constants
 
-logger = logging.getLogger()
+
+# logger = logging.getLogger()
+
 
 class Ghost(actor.MovingActor):
-
     score = 800
     state = None
     home_door_position = (216, 176)
@@ -29,7 +29,7 @@ class Ghost(actor.MovingActor):
             spritesheet_scatter_path=None,
             current_map=None,
             pacman=None,
-            groups=None
+            groups=None,
     ):
         super().__init__(
             x, y, width, height, constants.RED, spritesheet_path, current_map, *groups
@@ -44,12 +44,11 @@ class Ghost(actor.MovingActor):
         self.spritesheet_path = spritesheet_path
         self.spritesheet_chase_path = spritesheet_chase_path
         self.spritesheet_scatter_path = spritesheet_scatter_path
-        self.spritesheet_dead_path = "../res/ghosts/State_dead"
-        self.spritesheet_frightened_path = "../res/ghosts/State_scared"
+        self.spritesheet_dead_path = "../../res/ghosts/State_dead"
+        self.spritesheet_frightened_path = "../../res/ghosts/State_scared"
 
     def back_direction(self, current_dir):
         return -current_dir[0], -current_dir[1]
-
 
     def get_current_state(self):
         return self.state.get_current_state()
@@ -58,7 +57,7 @@ class Ghost(actor.MovingActor):
         return self.score
 
     def teleport(self, new_location):
-        logger.debug(f"teleport to {new_location}")
+        # logger.debug(f"teleport to {new_location}")
         self.rect.x = new_location[0]
         self.rect.y = new_location[1]
         self.direction = constants.LEFT
@@ -92,12 +91,15 @@ class Ghost(actor.MovingActor):
 
         elif self.get_current_state() == State.DEAD:
             self.set_spritesheet(self.spritesheet_dead_path)
+            self.color = constants.PURPLE
 
         elif self.get_current_state() == State.FRIGHTENED:
             self.set_spritesheet(self.spritesheet_frightened_path)
+            self.color = constants.BLUE
 
         elif self.state.get_current_state() == State.IN_HOME:
             self.set_spritesheet(self.spritesheet_path)
+            self.color = constants.LIGHT_PINK
 
     def can_be_frightened(self):
         return self.state.can_be_frightened()
@@ -109,14 +111,14 @@ class Ghost(actor.MovingActor):
         return self.state.can_be_ignored()
 
     def set_state(self, st):
-        self.threadLock.acquire(blocking=True)
-        logger.debug(f"{self.name} -> set_state({st})")
+        # self.threadLock.acquire(blocking=True)
+        # logger.debug(f"{self.name} -> set_state({st})")
         if self.state.current_state == State.IN_HOME:
             self.teleport(self.home_door_position)
 
         self.state.update_state(st)
         self.update_spritesheet()
-        self.threadLock.release()
+        # self.threadLock.release()
 
 
 class Blinky(Ghost):
@@ -130,7 +132,7 @@ class Blinky(Ghost):
             notify_in_home=None,
             pacman=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = Ghost.home_door_position
         super().__init__(
@@ -143,7 +145,7 @@ class Blinky(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
 
         self.color = constants.RED
@@ -183,7 +185,7 @@ class Pinky(Ghost):
             notify_in_home=None,
             pacman=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = (216, 224)
         super().__init__(
@@ -196,7 +198,7 @@ class Pinky(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
 
         self.color = constants.PINK
@@ -213,11 +215,9 @@ class Pinky(Ghost):
 
         self.priority = 1
 
-        # self.state.set_notify_state_change(self.change_spritesheet)
         self.update_spritesheet()
 
     def move(self):
-        # self.check_mode()
         pacman_position = self.pacman.get_pos()
         pacman_direction = self.pacman.get_direction()
         target_position = (
@@ -244,7 +244,7 @@ class Inky(Ghost):
             pacman=None,
             blinky=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = (184, 224)
         super().__init__(
@@ -257,7 +257,7 @@ class Inky(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
 
         self.color = constants.LIGHT_BLUE
@@ -275,7 +275,6 @@ class Inky(Ghost):
 
         self.priority = 2
 
-        # self.state.set_notify_state_change(self.change_spritesheet)
         self.update_spritesheet()
 
     def move(self):
@@ -315,7 +314,7 @@ class Clyde(Ghost):
             notify_in_home=None,
             pacman=None,
             map=None,
-            groups=None
+            groups=None,
     ):
         self.home_position = (248, 224)
         super().__init__(
@@ -328,7 +327,7 @@ class Clyde(Ghost):
             spritesheet_scatter_path=spritesheet_scatter_path,
             current_map=map,
             pacman=pacman,
-            groups=groups
+            groups=groups,
         )
         self.color = constants.ORANGE
         self.image.fill(self.color)
@@ -344,7 +343,6 @@ class Clyde(Ghost):
 
         self.priority = 3
 
-        # self.state.set_notify_state_change(self.change_spritesheet)
         self.update_spritesheet()
 
     def move(self):

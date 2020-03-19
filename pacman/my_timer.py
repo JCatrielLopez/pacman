@@ -1,5 +1,68 @@
+import threading
+import time
 from threading import Timer as ThreadTimer
-from time import time
+
+
+class ClockTimer(threading.Thread):
+    def __init__(self, interval=10, target_function=None, name=None):
+        threading.Thread.__init__(self, name=name)
+        self.paused = False
+        self.lock = threading.Condition(threading.Lock())
+        self.interval = interval
+        self.timeout = self.interval
+        self.target = target_function
+        self.last_tick = None
+        self.alive = True
+
+    def run(self):
+        self.last_tick = time.perf_counter()
+
+        while self.alive:
+            try:
+                with self.lock:
+                    while self.paused:
+                        self.lock.wait()
+
+                    t = time.perf_counter()
+                    if not self.paused:
+                        if int(t - self.last_tick) >= self.timeout:
+                            self.target()
+                            self.last_tick = t
+                            self.timeout = int(self.interval)
+                    time.sleep(1)
+            except RuntimeError:
+                pass
+
+    def pause(self, update_timeout=True):
+        if not self.paused:
+            self.paused = True
+
+            if update_timeout:
+                self.timeout = int(time.perf_counter() - self.last_tick)
+
+            self.lock.acquire()
+
+    def remaining_time(self):
+        return int(time.perf_counter() - self.last_tick)
+
+    def set_timeout(self, timeout):
+        self.timeout = timeout
+        self.last_tick = time.perf_counter()
+
+    def resume(self):
+        try:
+            self.paused = False
+            self.last_tick = time.perf_counter()
+            self.lock.notify()
+            self.lock.release()
+        except RuntimeError as e:
+            print(e)
+
+    def set_interval(self, interval):
+        self.interval = interval
+
+    def cancel(self):
+        self.alive = False
 
 
 class MyTimer:
@@ -43,3 +106,7 @@ class MyTimer:
 
     def set_timeout(self, timeout):
         self.timeout = timeout
+
+
+if __name__ == "__main__":
+    pass

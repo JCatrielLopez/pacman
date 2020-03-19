@@ -77,7 +77,7 @@ class Map:
             row = self.indexes[begin]
             col = self.indexes[end]
         except KeyError:
-            return 0
+            return 100
 
         return self.distances[row][col]
 
@@ -88,7 +88,7 @@ class Map:
         return self.pellet_group
 
     def get_background(self):
-        return self.bg_image
+        return "../" + self.bg_image
 
 
 if __name__ == "__main__":
