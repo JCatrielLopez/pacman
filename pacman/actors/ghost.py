@@ -17,6 +17,7 @@ class Ghost(actor.MovingActor):
 
     threadLock = Lock()
 
+
     def __init__(
             self,
             x=None,
@@ -38,7 +39,6 @@ class Ghost(actor.MovingActor):
 
         self.name = None
         self.pacman = pacman
-        # self.home_position = (0, 0)
 
         self.color = constants.RED
         self.spritesheet_path = spritesheet_path
