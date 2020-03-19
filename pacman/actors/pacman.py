@@ -107,7 +107,6 @@ class Pacman(actor.MovingActor):
         self.lives = param
 
     def set_power_up(self, power_up):
-        # logger.debug(f"set_power_up({power_up})")
 
         self.power_up = power_up
         if power_up:

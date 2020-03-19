@@ -25,7 +25,6 @@ class GameScene:
 
     def __init__(self, path):
         self.finish = False
-        # os.environ["SDL_VIDEODRIVER"] = "dummy"
         self.display = display.Display((constants.WIDTH, constants.HEIGHT))
         self.high_score_text = "HIGH SCORE: 0"
         self.score_text = "SCORE: 0"
@@ -41,6 +40,10 @@ class GameScene:
 
         self.characters = pg.sprite.Group()
         self.state_manager = StateManager()
+
+        self.ft_paused = False
+        self.dt_paused = False
+        self.lpt_paused = False
 
         self.pacman = Pacman(
             216,
@@ -136,7 +139,6 @@ class GameScene:
 
     def notify_lives(self):
         self.lives_text = f"x{self.pacman.get_lives()}"
-        # print(" - Rip pacman")
         if self.pacman.get_lives() <= 0:
             self.terminate()
 
@@ -145,7 +147,6 @@ class GameScene:
         self.is_level_done()
 
         if ate_an_energizer:
-            # logger.debug("Pacman ate an energizer")
             self.state_manager.change_to_frightened()
 
         self.state_manager.update_pellet_global_counter_values(pellets_eaten)
@@ -163,7 +164,9 @@ class GameScene:
         )
         self.display.render_text(self.lives_text, False, constants.WHITE, (421, 510))
         self.display.render_text(self.score_text, False, constants.WHITE, (198, 510))
-        self.display.render_text(self.global_pellets_text, False, constants.YELLOW, (15, 530))
+        self.display.render_text(
+            self.global_pellets_text, False, constants.YELLOW, (15, 530)
+        )
         self.display.render_text(self.ghost_counter, False, constants.YELLOW, (15, 550))
         self.display.update()
 
@@ -172,10 +175,10 @@ class GameScene:
 
     def process_input(self, events):
         for event in events:
-            if event.type == 2:  # Key pressed
+            if event.type == 2:
                 if event.dict["key"] == 104:
                     self.display.toggle_sprites()
-                elif event.dict["key"] == 8:  # next level
+                elif event.dict["key"] == 8:
                     self.terminate()
                 elif event.dict["key"] == 273:
                     self.pacman.move_up()
@@ -311,3 +314,31 @@ class GameScene:
         r = np.sign(r) * np.log(1 + abs(r))
         self.reward = 0
         return r
+
+    def pause_timers(self):
+        if self.state_manager.frightened_timer is not None:
+            if not self.state_manager.frightened_timer.paused:
+                self.state_manager.frightened_timer.pause()
+                self.ft_paused = True
+        if self.state_manager.dual_timer is not None:
+            if not self.state_manager.dual_timer.paused:
+                self.state_manager.dual_timer.pause()
+                self.dt_paused = True
+        if self.state_manager.last_pellet_timer is not None:
+            if not self.state_manager.last_pellet_timer.paused:
+                self.state_manager.last_pellet_timer.pause()
+                self.lpt_paused = True
+
+    def resume_timers(self):
+        if self.ft_paused:
+            if self.state_manager.frightened_timer is not None:
+                self.state_manager.frightened_timer.resume()
+                self.ft_paused = False
+        if self.dt_paused:
+            if self.state_manager.dual_timer is not None:
+                self.state_manager.dual_timer.resume()
+                self.dt_paused = False
+        if self.lpt_paused:
+            if self.state_manager.last_pellet_timer is not None:
+                self.state_manager.last_pellet_timer.resume()
+                self.lpt_paused = False

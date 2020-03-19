@@ -44,8 +44,7 @@ class DQN:
 
     def run(self, show_metrics=False):
 
-        for episode in tqdm(range(60, self.episodes + 1), ascii=True, unit="episodes"):
-            # print(f"Episode: {episode}\n")
+        for episode in tqdm(range(1, self.episodes + 1), ascii=True, unit="episodes"):
             self.agent.tensorboard.step = episode
 
             episode_reward = 0
@@ -89,7 +88,7 @@ class DQN:
                 self.epsilon *= self.epsilon_decay
                 self.epsilon = max(self.min_epsilon, self.epsilon)
 
-            if episode % 10 == 0:
+            if episode % 100 == 0:
                 self.agent.model.save(f"models/{self.model_name}__{episode}ep.model")
 
 

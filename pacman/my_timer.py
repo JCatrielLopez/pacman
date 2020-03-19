@@ -26,22 +26,19 @@ class ClockTimer(threading.Thread):
                     t = time.perf_counter()
                     if not self.paused:
                         if int(t - self.last_tick) >= self.timeout:
-                            print(f"\n{self.name} -> {time.ctime()}")
                             self.target()
                             self.last_tick = t
                             self.timeout = int(self.interval)
                     time.sleep(1)
             except RuntimeError:
-                print(f"\n{self.name} -> release unlocked lock")
+                pass
 
     def pause(self, update_timeout=True):
         if not self.paused:
             self.paused = True
-            print(f"\n{self.name} -> pausado")
 
             if update_timeout:
                 self.timeout = int(time.perf_counter() - self.last_tick)
-                print(f" new timeout: {self.timeout}")
 
             self.lock.acquire()
 
@@ -65,9 +62,7 @@ class ClockTimer(threading.Thread):
         self.interval = interval
 
     def cancel(self):
-        print("Cancel: ", self.name)
         self.alive = False
-
 
 
 class MyTimer:
@@ -113,40 +108,5 @@ class MyTimer:
         self.timeout = timeout
 
 
-if __name__ == '__main__':
-
-
-    def msg():
-        print(f"\n timer1: Hola desde {time.ctime()}")
-
-    def msg1():
-        print(f"\n timer2: chau {time.ctime()}")
-
-    timer = ClockTimer(interval=10, target_function=msg)
-
-    # print(f"Comienza en [{time.ctime()}]. Dormimos 3 segundos.")
-    # timer.start()
-    # time.sleep(3)
-    # print(f"\nPausamos en [{time.ctime()}]")
-    # timer.pause()
-    # print(f"\nTimeout en {timer.timeout}s. Dormimos por 3:")
-    # time.sleep(3)
-    # print(f"\nResumimos en [{time.ctime()}]")
-    # timer.resume()
-
-    print(f"Comienza en [{time.ctime()}]. Dormimos 15 segundos.")
-    timer.start()
-    time.sleep(15)
-
-    timer2 = ClockTimer(interval=10, target_function=msg1)
-
-    print(f"pausa en [{time.ctime()}]")
-    timer.pause()
-    timer2.start()
-
-    time.sleep(10)
-    timer2.cancel()
-    timer.resume()
-
-    time.sleep(30)
-
+if __name__ == "__main__":
+    pass

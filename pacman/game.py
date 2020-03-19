@@ -22,6 +22,7 @@ class GameEnv:
         # self.active_scene.toggle_sprites()
 
         self.frame_skip = 4
+        self.phi_length = 4
 
     def render(self):
         self.active_scene.render()
@@ -33,13 +34,16 @@ class GameEnv:
         done = False
         obs = []
 
-        for _ in range(0, self.frame_skip):
+        self.active_scene.resume_timers()
+        for i in range(0, self.frame_skip * self.phi_length):
             self.active_scene.process_action(action)
             reward += self.active_scene.get_reward()
             done = self.active_scene.is_finish()
 
-            obs.append(np.array(self.active_scene.get_state()))
+            if i % self.phi_length == 0:
+                obs.append(np.array(self.active_scene.get_state()))
 
+        self.active_scene.pause_timers()
         obs = np.stack(obs, axis=2)
         return obs, reward, done
 

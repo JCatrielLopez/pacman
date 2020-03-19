@@ -215,11 +215,9 @@ class Pinky(Ghost):
 
         self.priority = 1
 
-        # self.state.set_notify_state_change(self.change_spritesheet)
         self.update_spritesheet()
 
     def move(self):
-        # self.check_mode()
         pacman_position = self.pacman.get_pos()
         pacman_direction = self.pacman.get_direction()
         target_position = (
@@ -277,7 +275,6 @@ class Inky(Ghost):
 
         self.priority = 2
 
-        # self.state.set_notify_state_change(self.change_spritesheet)
         self.update_spritesheet()
 
     def move(self):
@@ -346,7 +343,6 @@ class Clyde(Ghost):
 
         self.priority = 3
 
-        # self.state.set_notify_state_change(self.change_spritesheet)
         self.update_spritesheet()
 
     def move(self):

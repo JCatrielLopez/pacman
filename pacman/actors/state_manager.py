@@ -24,7 +24,6 @@ class StateManager:
 
     def __init__(self):
 
-        # self.ghosts = Manager().list()
         self.ghosts = None
 
         self.scatter_time_list = [7.0, 7.0, 5.0, 5.0]
@@ -32,8 +31,11 @@ class StateManager:
         self.dual_time_index = 0
 
         self.dual_state = State.SCATTER
-        self.dual_timer = ClockTimer(interval=self.scatter_time_list[self.dual_time_index],
-                                     target_function=self.switch_scatter_chase, name="Dual timer")
+        self.dual_timer = ClockTimer(
+            interval=self.scatter_time_list[self.dual_time_index],
+            target_function=self.switch_scatter_chase,
+            name="Dual timer",
+        )
 
         self.frightened_timer = None
         self.frightened_timeout = 6
@@ -50,8 +52,11 @@ class StateManager:
         self.pellet_global_counter = False
 
         self.last_pellet_timeout = 4
-        self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout, target_function=self.resurrect_by_timer,
-                                            name="Last pellet timer")
+        self.last_pellet_timer = ClockTimer(
+            interval=self.last_pellet_timeout,
+            target_function=self.resurrect_by_timer,
+            name="Last pellet timer",
+        )
 
         self.dual_timer.start()
         self.last_pellet_timer.start()
@@ -61,18 +66,20 @@ class StateManager:
         self.ghosts.sort(key=lambda x: x.priority)
 
     def switch_scatter_chase(self):
-        print(f"dual time index: {self.dual_time_index}")
         if self.ghosts is not None:
             if self.dual_state == State.SCATTER:
                 self.dual_state = State.CHASE
                 self.dual_timer.set_interval(self.chase_time_list[self.dual_time_index])
-                print(f"new interval: {self.chase_time_list[self.dual_time_index]}")
             else:
-                if self.dual_time_index <= 3:
+                if self.dual_time_index < 3:
                     self.dual_state = State.SCATTER
                     self.dual_time_index += 1
-                self.dual_timer.set_interval(self.scatter_time_list[self.dual_time_index])
-                print(f"new interval: {self.scatter_time_list[self.dual_time_index]}")
+                else:
+                    self.dual_time_index = 0
+
+                self.dual_timer.set_interval(
+                    self.scatter_time_list[self.dual_time_index]
+                )
 
             for ghost in self.ghosts:
                 if not ghost.can_be_ignored():
@@ -87,17 +94,20 @@ class StateManager:
                     ghost.set_state(State.FRIGHTENED)
 
             if self.frightened_timer is not None:
-                self.frightened_timer.set_timeout(self.frightened_timeout + self.frightened_timer.remaining_time())
+                self.frightened_timer.set_timeout(
+                    self.frightened_timeout + self.frightened_timer.remaining_time()
+                )
             else:
-                self.frightened_timer = ClockTimer(interval=self.frightened_timeout,
-                                                   target_function=self.end_of_fright_timeout,
-                                                   name="Frightened timer")
+                self.frightened_timer = ClockTimer(
+                    interval=self.frightened_timeout,
+                    target_function=self.end_of_fright_timeout,
+                    name="Frightened timer",
+                )
                 self.frightened_timer.start()
 
     def end_of_fright_timeout(self):
         if self.ghosts is not None:
             if self.frightened_timer is not None:
-                # self.frightened_timer.pause(update_timeout=False)
                 self.frightened_timer.cancel()
                 self.frightened_timer = None
                 self.dual_timer.resume()
@@ -117,9 +127,11 @@ class StateManager:
             ghost.set_state(State.IN_HOME)
 
             if self.last_pellet_timer is None:
-                self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout,
-                                                    target_function=self.resurrect_by_timer,
-                                                    name="Last pellet timer")
+                self.last_pellet_timer = ClockTimer(
+                    interval=self.last_pellet_timeout,
+                    target_function=self.resurrect_by_timer,
+                    name="Last pellet timer",
+                )
                 self.last_pellet_timer.start()
             else:
                 self.last_pellet_timer.resume()
@@ -161,9 +173,6 @@ class StateManager:
                             == self.pellet_global_counter_limits[index]
                     ):
                         self.ghosts[index].set_state(self.dual_state)
-                        # logger.debug(
-                        #     f"{self.ghosts[index].name} resurrected by global limit!"
-                        # )
                         return True
 
             self.reset_last_pellet_timer()
@@ -189,8 +198,11 @@ class StateManager:
         self.dual_state = State.SCATTER
         self.dual_timer.cancel()
         self.dual_time_index = 0
-        self.dual_timer = ClockTimer(interval=self.scatter_time_list[self.dual_time_index],
-                                     target_function=self.switch_scatter_chase, name="Dual timer")
+        self.dual_timer = ClockTimer(
+            interval=self.scatter_time_list[self.dual_time_index],
+            target_function=self.switch_scatter_chase,
+            name="Dual timer",
+        )
         self.dual_timer.start()
         for ghost in self.ghosts:
             ghost.set_state(State.IN_HOME)
@@ -203,8 +215,11 @@ class StateManager:
         if self.last_pellet_timer is not None:
             self.last_pellet_timer.cancel()
 
-        self.last_pellet_timer = ClockTimer(interval=self.last_pellet_timeout, target_function=self.resurrect_by_timer,
-                                            name="Last pellet timer")
+        self.last_pellet_timer = ClockTimer(
+            interval=self.last_pellet_timeout,
+            target_function=self.resurrect_by_timer,
+            name="Last pellet timer",
+        )
         self.last_pellet_timer.start()
 
     def terminate(self):
@@ -243,13 +258,15 @@ class StateManager:
             self.resurrect_by_global_limit()
 
     def reset_last_pellet_timer(self):
-        if self.remaining_ghosts_in_home() is False and self.last_pellet_timer is not None:
+        if (
+                self.remaining_ghosts_in_home() is False
+                and self.last_pellet_timer is not None
+        ):
             self.last_pellet_timer.cancel()
             self.last_pellet_timer = None
         else:
             if self.last_pellet_timer is not None:
                 self.last_pellet_timer.set_timeout(self.last_pellet_timeout)
-                # self.last_pellet_timer = None
 
     def remaining_ghosts_in_home(self):
         if self.ghosts is not None:
