@@ -1,13 +1,15 @@
 import os
 import pickle
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pygame as pg
 
+from pacman.dqn.DQN import DQN
 from pacman.game import GameEnv
 
 
 class Game:
-
     def __init__(self, episodes=100):
         self.episodes = episodes
         self.env = GameEnv()
@@ -17,7 +19,7 @@ class Game:
         self.replay_memory = []
 
     def save_replay_memory(self):
-        with open('replay/replay_memory.pkl', 'ab') as f:
+        with open("replay/replay_memory.pkl", "ab") as f:
             pickle.dump(self.replay_memory, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def run(self):
@@ -25,7 +27,7 @@ class Game:
             current_state = self.env.reset()
             done = False
 
-            print(f"\rReplay memory length: {len(self.replay_memory)}", end='')
+            print(f"\rReplay memory length: {len(self.replay_memory)}", end="")
             while not done:
                 action = -1
 
@@ -58,17 +60,25 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game(episodes=1)
 
-    # cProfile.run('game.run()')
-    game.run()
+    network = DQN(render=False, episodes=12000, model_name="Pacmanv3")
+    network.run(show_metrics=True)
 
-    # TODO Consultar:
-    #
-    # Comparar DQN (NATURE 2015) con DQNfD. Vale la pena aplicar demostraciones?
-    #   Si aplicamos DQNfD, lo hacemos aplicando prioridad a las experiencias humanas? (ICLR 2016)
-    #   El modelo esta bien armado?
-    # No pasa nada si la imagen no esta centrada?
-    # Aplicamos la escala logaritmica a las rewards como DQNfD? Cual es el beneficio, bien explicado.
-    # Que metricas sacar y graficar? (acc, val_acc, loss y val_loss?)
-    # Que pasa si tarda siglos en entrenar?
+    with open('models/training_history.pickle', 'rb') as f:
+        h = pickle.load(f)
+
+    avg_acc = []
+    for i in range(0, len(h["accuracy"]) - 1000, 1000):
+        avg_acc.append(np.average(h['accuracy'][i:i + 1000]))
+
+    avg_val_acc = []
+    for i in range(0, len(h["val_accuracy"]) - 1000, 1000):
+        avg_val_acc.append(np.average(h['val_accuracy'][i:i + 1000]))
+
+    plt.plot(avg_acc)
+    plt.plot(avg_val_acc)
+    plt.title("model accuracy")
+    plt.ylabel("accuracy")
+    plt.xlabel("epoch")
+    plt.legend(["train", "test"], loc="upper left")
+    plt.show()

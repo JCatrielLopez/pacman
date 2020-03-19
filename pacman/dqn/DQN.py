@@ -21,7 +21,6 @@ np.random.seed(21022020)
 
 
 class DQN:
-
     def __init__(self, render=False, episodes=600, model_name=""):
         self.render_scene = render
         self.episodes = episodes
@@ -31,7 +30,7 @@ class DQN:
         self.epsilon_decay = 0.99975
         self.min_epsilon = 0.001
 
-        self.aggregate_stats_every = 50
+        self.aggregate_stats_every = 5
         self.max_steps_per_episode = 2500
 
         if not os.path.isdir("models"):
@@ -45,8 +44,8 @@ class DQN:
 
     def run(self, show_metrics=False):
 
-        for episode in tqdm(range(1, self.episodes + 1), ascii=True, unit="episodes"):
-
+        for episode in tqdm(range(60, self.episodes + 1), ascii=True, unit="episodes"):
+            # print(f"Episode: {episode}\n")
             self.agent.tensorboard.step = episode
 
             episode_reward = 0
@@ -79,12 +78,20 @@ class DQN:
 
                 done = done or (step >= self.max_steps_per_episode)
 
-            if not episode % self.aggregate_stats_every or episode == 1 and show_metrics:
+            if (
+                    not episode % self.aggregate_stats_every
+                    or episode == 1
+                    and show_metrics
+            ):
                 self.agent.get_plot()
 
             if self.epsilon > self.min_epsilon:
                 self.epsilon *= self.epsilon_decay
                 self.epsilon = max(self.min_epsilon, self.epsilon)
 
-            if episode % 100 == 0:
+            if episode % 10 == 0:
                 self.agent.model.save(f"models/{self.model_name}__{episode}ep.model")
+
+
+if __name__ == "__main__":
+    pass

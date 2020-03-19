@@ -63,11 +63,13 @@ class DQNAgent:
 
         self.action_space = 4
         self.lr = 0.05
-        self.replay_memory_min = 25000
-        self.batch_size = 100
+        self.replay_memory_min = 250
+        self.batch_size = 16
 
         # Main model
         self.model = self.create_model()
+
+        # self.model = load_model('models/Pacmanv3_250ep.model')
 
         self.gamma = 0.99
         self.epsilon = 1
@@ -89,6 +91,7 @@ class DQNAgent:
         # Used to count when to update target network with main network's weights
         self.target_update_counter = 0
         self.history = None
+        self.cont = 0
 
     def create_model(self):
         model = Sequential()
@@ -107,15 +110,14 @@ class DQNAgent:
 
         model.add(Dense(self.action_space, activation="linear"))
 
-        model.compile(
-            loss="mse", optimizer=Adam(lr=self.lr), metrics=["accuracy"]
-        )
+        model.compile(loss="mse", optimizer=Adam(lr=self.lr), metrics=["accuracy"])
         return model
 
     def update_replay_memory(self, transition):
         self.replay_memory.append(transition)
 
     def train(self, terminal_state, step):
+
         if len(self.replay_memory) < self.replay_memory_min:
             return
 
@@ -158,6 +160,7 @@ class DQNAgent:
         )
 
         self.history = self.appendHist(self.history, history.history)
+        # print(f"\nHistory: {self.history}")
 
         if terminal_state:
             self.target_update_counter += 1
@@ -170,33 +173,34 @@ class DQNAgent:
         return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
 
     def get_plot(self):
+        # self.cont += 1
         if self.history is not None:
-            plt.plot(self.history['accuracy'])
-            plt.plot(self.history['val_accuracy'])
-            plt.title('model accuracy')
-            plt.ylabel('accuracy')
-            plt.xlabel('epoch')
-            plt.legend(['train', 'test'], loc='upper left')
+            plt.plot(self.history["accuracy"])
+            plt.plot(self.history["val_accuracy"])
+            plt.title("model accuracy")
+            plt.ylabel("accuracy")
+            plt.xlabel("epoch")
+            plt.legend(["train", "test"], loc="upper left")
             plt.show()
+            # plt.savefig(f"plots/{self.cont}_acc.png")
 
-            plt.plot(self.history['loss'])
-            plt.plot(self.history['val_loss'])
-            plt.title('model loss')
-            plt.ylabel('loss')
-            plt.xlabel('epoch')
-            plt.legend(['train', 'test'], loc='upper left')
+            plt.plot(self.history["loss"])
+            plt.plot(self.history["val_loss"])
+            plt.title("model loss")
+            plt.ylabel("loss")
+            plt.xlabel("epoch")
+            plt.legend(["train", "test"], loc="upper left")
             plt.show()
-        else:
-            print("History None")
+            # plt.savefig(f"plots/{self.cont}_loss.png")
 
     def saveHist(self, path, history):
-        with codecs.open(path, 'w', encoding='utf-8') as f:
-            json.dump(history, f, separators=(',', ':'), sort_keys=True, indent=4)
+        with codecs.open(path, "w", encoding="utf-8") as f:
+            json.dump(history, f, separators=(",", ":"), sort_keys=True, indent=4)
 
     def loadHist(self, path):
         n = {}  # set history to empty
         if os.path.exists(path):  # reload history if it exists
-            with codecs.open(path, 'r', encoding='utf-8') as f:
+            with codecs.open(path, "r", encoding="utf-8") as f:
                 n = json.loads(f.read())
         return n
 
