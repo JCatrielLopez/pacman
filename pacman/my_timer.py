@@ -16,7 +16,6 @@ class ClockTimer(threading.Thread):
 
     def run(self):
         self.last_tick = time.perf_counter()
-
         while self.alive:
             try:
                 with self.lock:
@@ -38,7 +37,7 @@ class ClockTimer(threading.Thread):
             self.paused = True
 
             if update_timeout:
-                self.timeout = int(time.perf_counter() - self.last_tick)
+                self.timeout = self.timeout - (int(time.perf_counter() - self.last_tick))
 
             self.lock.acquire()
 

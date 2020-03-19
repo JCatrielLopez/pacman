@@ -1,5 +1,6 @@
 import pygame as pg
 
+from pacman.dqn.Agent import DQNAgent
 from pacman.dqn.DQN import DQN
 from pacman.game import GameEnv
 

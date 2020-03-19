@@ -137,7 +137,6 @@ class StateManager:
                 self.last_pellet_timer.resume()
 
     def resurrect_by_timer(self):
-
         if self.ghosts is not None:
             for index in range(0, len(self.ghosts)):
                 if self.ghosts[index].get_current_state() == State.IN_HOME:
