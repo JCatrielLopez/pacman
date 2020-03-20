@@ -36,6 +36,10 @@ class Game:
                 if render:
                     self.env.render()
 
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        done = True
+
         self.env.close()
 
 
