@@ -29,6 +29,8 @@ class Game:
                     action = 3
                 if pg.key.get_pressed()[pg.K_h]:
                     self.env.active_scene.toggle_sprites()
+                if pg.key.get_pressed()[pg.K_ESCAPE]:
+                    done = True
 
                 self.env.active_scene.process_action(action)
 

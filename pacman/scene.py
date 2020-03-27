@@ -26,6 +26,10 @@ class GameScene:
     def __init__(self, path):
         self.finish = False
         self.display = display.Display((constants.WIDTH, constants.HEIGHT))
+
+        programIcon = pg.image.load('../../res/icon.png')
+        pg.display.set_icon(programIcon)
+
         self.high_score_text = "HIGH SCORE: 0"
         self.score_text = "SCORE: 0"
         self.lives_text = "x3"
@@ -180,6 +184,8 @@ class GameScene:
                     self.display.toggle_sprites()
                 elif event.dict["key"] == 8:
                     self.terminate()
+                # elif event.dict["key"] == pg.K_ESCAPE:
+                #     print("ESCAPEEE")
                 elif event.dict["key"] == 273:
                     self.pacman.move_up()
                 elif event.dict["key"] == 274:
