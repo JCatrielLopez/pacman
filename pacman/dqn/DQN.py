@@ -1,5 +1,6 @@
 import logging
 import os
+import pickle
 import random
 
 import numpy as np
@@ -78,8 +79,8 @@ class DQN:
                 done = done or (step >= self.max_steps_per_episode)
 
             if (
-                    not episode % self.aggregate_stats_every
-                    or episode == 1
+                    (not episode % self.aggregate_stats_every
+                     or episode == 1)
                     and show_metrics
             ):
                 self.agent.get_plot()
@@ -90,6 +91,9 @@ class DQN:
 
             if episode % 100 == 0:
                 self.agent.model.save(f"models/{self.model_name}__{episode}ep.model")
+
+        with open('models/training_history.pickle', 'rb') as f:
+            pickle.dump(self.agent.history, f)
 
 
 if __name__ == "__main__":

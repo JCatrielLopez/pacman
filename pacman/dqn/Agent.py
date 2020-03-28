@@ -173,7 +173,39 @@ class DQNAgent:
         return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
 
     def get_plot(self):
-        # self.cont += 1
+
+        # avg_acc = []
+        # for i in range(0, len(self.history["accuracy"]) - 1000, 1000):
+        #     avg_acc.append(np.average(self.history['accuracy'][i:i + 1000]))
+        #
+        # avg_val_acc = []
+        # for i in range(0, len(self.history["val_accuracy"]) - 1000, 1000):
+        #     avg_val_acc.append(np.average(self.history['val_accuracy'][i:i + 1000]))
+        #
+        # avg_loss = []
+        # for i in range(0, len(self.history["loss"]) - 1000, 1000):
+        #     avg_loss.append(np.average(self.history['loss'][i:i + 1000]))
+        #
+        # avg_val_loss = []
+        # for i in range(0, len(self.history["val_loss"]) - 1000, 1000):
+        #     avg_val_loss.append(np.average(self.history['val_loss'][i:i + 1000]))
+        #
+        # plt.plot(avg_acc)
+        # plt.plot(avg_val_acc)
+        # plt.title("model accuracy")
+        # plt.ylabel("accuracy")
+        # plt.xlabel("epoch")
+        # plt.legend(["train", "test"], loc="upper left")
+        # plt.show()
+        #
+        # plt.plot(avg_loss)
+        # plt.plot(avg_val_loss)
+        # plt.title("model loss")
+        # plt.ylabel("loss")
+        # plt.xlabel("epoch")
+        # plt.legend(["train", "test"], loc="upper left")
+        # plt.show()
+
         if self.history is not None:
             plt.plot(self.history["accuracy"])
             plt.plot(self.history["val_accuracy"])
@@ -182,7 +214,6 @@ class DQNAgent:
             plt.xlabel("epoch")
             plt.legend(["train", "test"], loc="upper left")
             plt.show()
-            # plt.savefig(f"plots/{self.cont}_acc.png")
 
             plt.plot(self.history["loss"])
             plt.plot(self.history["val_loss"])
@@ -191,7 +222,6 @@ class DQNAgent:
             plt.xlabel("epoch")
             plt.legend(["train", "test"], loc="upper left")
             plt.show()
-            # plt.savefig(f"plots/{self.cont}_loss.png")
 
     def saveHist(self, path, history):
         with codecs.open(path, "w", encoding="utf-8") as f:
