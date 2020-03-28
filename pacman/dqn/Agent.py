@@ -14,7 +14,6 @@ from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-
 class ModifiedTensorBoard(TensorBoard):
 
     # Overriding init to set initial step and writer (we want one log file for all .fit() calls)
