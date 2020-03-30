@@ -11,6 +11,8 @@ from pacman.game import GameEnv
 render = False
 show_metrics = False
 episodes = 12000
+model_path = 'models/Pacmanv3__250ep.model'
+
 
 
 class Game:
@@ -58,9 +60,15 @@ def play():
     g.run(render=True)
 
 
-def autoplay(render=False, episodes=12000, show_metrics=True):
-    network = DQN(render=render, episodes=episodes, model_name="Pacman")
+def autoplay(render=False, episodes=12000, show_metrics=True, model_path=None):
+    print('model_path: ',model_path)
+    network = DQN(render=render, episodes=episodes, model_name="Pacman",model_path=model_path)
     network.run(show_metrics=show_metrics)
+    # TODO terminar
+    # episode = 0
+    # while episode != episodes:
+    #     episode = network.run(show_metrics=show_metrics)
+    #     print(episode)
 
 
 def bg_fun():
@@ -84,11 +92,22 @@ def set_episodes(value, c=None, **kwargs):
         episodes = int(value[1])
     except ValueError:
         pass  # Queda el valor por defecto.
+    except IndexError:
+        pass
 
+def set_model_path(value, c=None, **kwargs):
+    global model_path
+    try:
+        model_path = value[1]
+    except ValueError:
+        pass  # Queda el valor por defecto.
 
 if __name__ == "__main__":
 
     pg.init()
+    programIcon = pg.image.load('../../res/icon.png')
+    pg.display.set_icon(programIcon)
+
     os.environ['SDL_VIDEO_CENTERED'] = '1'
 
     global surface
@@ -144,6 +163,32 @@ if __name__ == "__main__":
     train_menu.add_selector('Metrics', [('Show', True), ('Hide', False)], onchange=set_metrics)
     train_menu.add_option('Start', autoplay, render, episodes, show_metrics)
 
+    test_menu = pygameMenu.Menu(surface,
+                                 bgfun=bg_fun,
+                                 color_selected=constants.WHITE,
+                                 font=pygameMenu.font.FONT_BEBAS,
+                                 font_color=constants.WHITE,
+                                 font_size=30,
+                                 menu_alpha=100,
+                                 menu_color=constants.RED,
+                                 menu_height=int(constants.HEIGHT * 0.9),
+                                 menu_width=int(constants.WIDTH * 0.9),
+                                 onclose=pygameMenu.events.DISABLE_CLOSE,
+                                 option_shadow=False,
+                                 title='Test',
+                                 window_height=constants.HEIGHT,
+                                 window_width=constants.WIDTH
+                                 )
+
+    test_menu.add_text_input('Episodes ', default=12000, maxchar=7, input_underline=".", onchange=set_episodes)
+    test_menu.add_text_input('Model Path ', default=model_path, input_underline=".", onchange=set_episodes)
+    # test_menu.add_text_input('Model Path ', default=model_path, maxwidth=10, input_underline=".", onchange=set_episodes)
+    test_menu.add_option('Start', autoplay, True, episodes, False, model_path)
+
+    # test_menu.add_text_input('Holis ',textinput_id='id1', maxwidth=10, maxchar=20, default="ABCDEFG")
+    # test_menu.get_widget('id1').set_value("ABCDEFG")
+
+
     main_menu = pygameMenu.Menu(surface,
                                 bgfun=bg_fun,
                                 color_selected=constants.WHITE,
@@ -166,6 +211,7 @@ if __name__ == "__main__":
 
     main_menu.add_option('Train',
                          train_menu)
+    main_menu.add_option('Test',test_menu)
     main_menu.add_option('About', about_menu)
     main_menu.add_option('Quit', pygameMenu.events.EXIT)
 
@@ -175,7 +221,6 @@ if __name__ == "__main__":
         clock.tick(constants.FPS)
 
         bg_fun()
-
         events = pg.event.get()
         for event in events:
             if event.type == pg.QUIT:

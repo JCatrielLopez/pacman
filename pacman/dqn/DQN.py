@@ -22,7 +22,7 @@ np.random.seed(21022020)
 
 
 class DQN:
-    def __init__(self, render=False, episodes=600, model_name=""):
+    def __init__(self, render=False, episodes=600, model_name="", model_path=None):
         self.render_scene = render
         self.episodes = episodes
         self.model_name = model_name
@@ -40,11 +40,12 @@ class DQN:
         if not os.path.isdir("logs"):
             os.makedirs("logs")
 
-        self.agent = DQNAgent()
+        self.agent = DQNAgent(model_path)
         self.env = GameEnv()
 
     def run(self, show_metrics=False):
 
+        # TODO yield
         for episode in tqdm(range(1, self.episodes + 1), ascii=True, unit="episodes"):
             self.agent.tensorboard.step = episode
 
@@ -91,6 +92,7 @@ class DQN:
 
             if episode % 100 == 0:
                 self.agent.model.save(f"models/{self.model_name}__{episode}ep.model")
+
 
         with open('models/training_history.pickle', 'rb') as f:
             pickle.dump(self.agent.history, f)

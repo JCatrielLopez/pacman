@@ -184,8 +184,6 @@ class GameScene:
                     self.display.toggle_sprites()
                 elif event.dict["key"] == 8:
                     self.terminate()
-                # elif event.dict["key"] == pg.K_ESCAPE:
-                #     print("ESCAPEEE")
                 elif event.dict["key"] == 273:
                     self.pacman.move_up()
                 elif event.dict["key"] == 274:

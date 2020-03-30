@@ -9,10 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from keras.callbacks import TensorBoard
+from keras.engine.saving import load_model
 from keras.layers import Conv2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.models import Sequential
 from keras.optimizers import Adam
+
 
 class ModifiedTensorBoard(TensorBoard):
 
@@ -58,7 +60,7 @@ class ModifiedTensorBoard(TensorBoard):
 
 
 class DQNAgent:
-    def __init__(self):
+    def __init__(self, model_path=None):
 
         self.action_space = 4
         self.lr = 0.05
@@ -66,9 +68,11 @@ class DQNAgent:
         self.batch_size = 16
 
         # Main model
-        self.model = self.create_model()
-
-        # self.model = load_model('models/Pacmanv3_250ep.model')
+        if model_path is None:
+            self.model = self.create_model()
+        else:
+            # 'models/Pacmanv3_250ep.model'
+            self.model = load_model(model_path)
 
         self.gamma = 0.99
         self.epsilon = 1
