@@ -2,6 +2,7 @@ import logging
 import os
 import pickle
 import random
+import datetime
 
 import numpy as np
 from tqdm import tqdm
@@ -22,10 +23,11 @@ np.random.seed(21022020)
 
 
 class DQN:
-    def __init__(self, render=False, episodes=600, model_name="", model_path=None):
+    def __init__(self, render=False, episodes=600, model_name="", model_path=None, update_episodes=None):
         self.render_scene = render
         self.episodes = episodes
         self.model_name = model_name
+        self.update_episodes = update_episodes
 
         self.epsilon = 1
         self.epsilon_decay = 0.99975
@@ -43,9 +45,16 @@ class DQN:
         self.agent = DQNAgent(model_path)
         self.env = GameEnv()
 
-    def run(self, show_metrics=False):
+    def run(self, show_metrics=False, end_of_train_screen=None):
 
-        # TODO yield
+        # TODO quitar este IF
+        # if end_of_train_screen is not None:
+        #     end_of_train_screen('models/Pacmanv3__250ep.model')
+        #     return
+
+        if self.update_episodes is not None:
+            self.update_episodes(0, self.episodes)
+
         for episode in tqdm(range(1, self.episodes + 1), ascii=True, unit="episodes"):
             self.agent.tensorboard.step = episode
 
@@ -79,6 +88,7 @@ class DQN:
 
                 done = done or (step >= self.max_steps_per_episode)
 
+
             if (
                     (not episode % self.aggregate_stats_every
                      or episode == 1)
@@ -91,11 +101,23 @@ class DQN:
                 self.epsilon = max(self.min_epsilon, self.epsilon)
 
             if episode % 100 == 0:
-                self.agent.model.save(f"models/{self.model_name}__{episode}ep.model")
+                string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
+                self.agent.model.save(f"models/{self.model_name}__{episode}ep - {string_date}.model")
 
+            if self.update_episodes is not None:
+                self.update_episodes(episode, self.episodes)
 
-        with open('models/training_history.pickle', 'rb') as f:
+        string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
+        filepath = f"models/{self.model_name}__{self.episodes}ep - {string_date}.model"
+        self.agent.model.save(filepath)
+        print('Training finish! - model saved in: ', filepath)
+
+        # TODO PREGUNTARLE A CATRIEL ESTO DEL WB
+        with open('models/training_history.pickle', 'wb') as f:
             pickle.dump(self.agent.history, f)
+
+        if end_of_train_screen is not None:
+            end_of_train_screen(filepath)
 
 
 if __name__ == "__main__":

@@ -176,7 +176,6 @@ class DQNAgent:
         return self.model.predict(np.array(state).reshape(-1, *state.shape))[0]
 
     def get_plot(self):
-
         # avg_acc = []
         # for i in range(0, len(self.history["accuracy"]) - 1000, 1000):
         #     avg_acc.append(np.average(self.history['accuracy'][i:i + 1000]))
@@ -217,6 +216,7 @@ class DQNAgent:
             plt.xlabel("epoch")
             plt.legend(["train", "test"], loc="upper left")
             plt.show()
+            print('plotting accuracy')
 
             plt.plot(self.history["loss"])
             plt.plot(self.history["val_loss"])

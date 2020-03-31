@@ -48,7 +48,6 @@ class GameEnv:
         return obs, reward, done
 
     def reset(self):
-        # self.active_scene.terminate()
         self.active_scene = scene.GameScene("../../res/map/01_level.npz")
         self.active_scene.init_scene()
 
@@ -60,6 +59,7 @@ class GameEnv:
         return obs
 
     def close(self):
+        print('in close')
         self.active_scene.terminate()
-        pg.quit()
-        sys.exit()
+        # pg.quit()
+        # sys.exit()
