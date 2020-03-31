@@ -1,5 +1,9 @@
 import os
 
+# import sys
+# # insert at 1, 0 is the script path (or '' in REPL)
+# sys.path.insert(1, '../pacman')
+
 import pygame as pg
 import pygameMenu
 from pygameMenu import locals

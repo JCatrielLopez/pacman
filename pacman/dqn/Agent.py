@@ -14,6 +14,7 @@ from keras.layers import Conv2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.models import Sequential
 from keras.optimizers import Adam
+from numpy import block
 
 
 class ModifiedTensorBoard(TensorBoard):
@@ -209,22 +210,27 @@ class DQNAgent:
         # plt.show()
 
         if self.history is not None:
+            plt.clf()
+
+            plt.subplot(1, 2, 1)
             plt.plot(self.history["accuracy"])
             plt.plot(self.history["val_accuracy"])
             plt.title("model accuracy")
             plt.ylabel("accuracy")
             plt.xlabel("epoch")
             plt.legend(["train", "test"], loc="upper left")
-            plt.show()
-            print('plotting accuracy')
 
+            plt.subplot(1, 2, 2)
             plt.plot(self.history["loss"])
             plt.plot(self.history["val_loss"])
             plt.title("model loss")
             plt.ylabel("loss")
             plt.xlabel("epoch")
             plt.legend(["train", "test"], loc="upper left")
-            plt.show()
+
+            print('plotting')
+            plt.draw()
+            plt.pause(0.001)
 
     def saveHist(self, path, history):
         with codecs.open(path, "w", encoding="utf-8") as f:
@@ -245,3 +251,46 @@ class DQNAgent:
             for key, value in h1.items():
                 dest[key] = value + h2[key]
             return dest
+
+
+if __name__ == "__main__":
+
+    plt.ion()
+    plt.show()
+
+    for i in range(10):
+
+        plt.clf()
+
+        accuracy = [random.randint(0, 10) for _ in range(10)]
+        val_accuracy = [random.randint(0, 10) for _ in range(10)]
+        loss = [random.randint(0, 100) for _ in range(10)]
+        val_loss = [random.randint(0, 100) for _ in range(10)]
+
+        history = {
+            'accuracy': accuracy,
+            'val_accuracy': val_accuracy,
+            'loss': loss,
+            'val_loss': val_loss,
+        }
+
+        plt.subplot(1,2,1)
+        plt.plot(history["accuracy"])
+        plt.plot(history["val_accuracy"])
+        plt.title("model accuracy")
+        plt.ylabel("accuracy")
+        plt.xlabel("epoch")
+        plt.legend(["train", "test"], loc="upper left")
+        # print('plotting accuracy')
+
+        plt.subplot(1, 2, 2)
+        plt.plot(history["loss"])
+        plt.plot(history["val_loss"])
+        plt.title("model loss")
+        plt.ylabel("loss")
+        plt.xlabel("epoch")
+        plt.legend(["train", "test"], loc="upper left")
+
+        plt.draw()
+        plt.pause(1)
+        print('plotting')

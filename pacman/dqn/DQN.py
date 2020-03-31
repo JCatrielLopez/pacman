@@ -3,6 +3,8 @@ import os
 import pickle
 import random
 import datetime
+import time
+import matplotlib.pyplot as plt
 
 import numpy as np
 from tqdm import tqdm
@@ -47,7 +49,17 @@ class DQN:
 
     def run(self, show_metrics=False, end_of_train_screen=None):
 
-        # TODO quitar este IF
+        plt.ion()
+        plt.show()
+
+        # TODO quitar esto
+        # for i in range(5):
+        #     print(i)
+        #     time.sleep(1)
+        #     self.update_episodes(i, self.episodes)
+        #
+        #
+        #
         # if end_of_train_screen is not None:
         #     end_of_train_screen('models/Pacmanv3__250ep.model')
         #     return
@@ -89,11 +101,14 @@ class DQN:
                 done = done or (step >= self.max_steps_per_episode)
 
 
-            if (
-                    (not episode % self.aggregate_stats_every
-                     or episode == 1)
-                    and show_metrics
-            ):
+            # if (
+            #         (not episode % self.aggregate_stats_every
+            #          or episode == 1)
+            #         and show_metrics
+            # ):
+            #     self.agent.get_plot()
+
+            if (show_metrics):
                 self.agent.get_plot()
 
             if self.epsilon > self.min_epsilon:
@@ -108,11 +123,11 @@ class DQN:
                 self.update_episodes(episode, self.episodes)
 
         string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
+
         filepath = f"models/{self.model_name}__{self.episodes}ep - {string_date}.model"
         self.agent.model.save(filepath)
         print('Training finish! - model saved in: ', filepath)
 
-        # TODO PREGUNTARLE A CATRIEL ESTO DEL WB
         with open('models/training_history.pickle', 'wb') as f:
             pickle.dump(self.agent.history, f)
 
