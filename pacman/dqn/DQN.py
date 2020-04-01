@@ -128,7 +128,7 @@ class DQN:
         self.agent.model.save(filepath)
         print('Training finish! - model saved in: ', filepath)
 
-        with open('models/training_history.pickle', 'wb') as f:
+        with open('models/{self.model_name}__{self.episodes}ep - {string_date}__training_history.pickle', 'wb') as f:
             pickle.dump(self.agent.history, f)
 
         if end_of_train_screen is not None:
