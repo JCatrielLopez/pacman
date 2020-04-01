@@ -1,9 +1,5 @@
 import os
 
-# import sys
-# # insert at 1, 0 is the script path (or '' in REPL)
-# sys.path.insert(1, '../pacman')
-
 import pygame as pg
 import pygameMenu
 from pygameMenu import locals
@@ -159,7 +155,7 @@ def set_episodes_test(value, c=None, **kwargs):
 def set_model_path_test(value, c=None, **kwargs):
     global model_path_test
     try:
-        model_path_test = value[1]
+        model_path_test = value
     except ValueError:
         pass  # Queda el valor por defecto.
 
@@ -303,6 +299,7 @@ def create_menus():
 
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     show_metrics_train = True
     episodes_train = 12000
