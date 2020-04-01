@@ -5,7 +5,7 @@ import random
 import datetime
 import time
 import matplotlib.pyplot as plt
-
+import pygame as pg
 import numpy as np
 from tqdm import tqdm
 
@@ -47,22 +47,10 @@ class DQN:
         self.agent = DQNAgent(model_path)
         self.env = GameEnv()
 
-    def run(self, show_metrics=False, end_of_train_screen=None):
+    def run(self, train, show_metrics=False, end_of_train_screen=None):
 
         plt.ion()
         plt.show()
-
-        # TODO quitar esto
-        # for i in range(5):
-        #     print(i)
-        #     time.sleep(1)
-        #     self.update_episodes(i, self.episodes)
-        #
-        #
-        #
-        # if end_of_train_screen is not None:
-        #     end_of_train_screen('models/Pacmanv3__250ep.model')
-        #     return
 
         if self.update_episodes is not None:
             self.update_episodes(0, self.episodes)
@@ -77,10 +65,13 @@ class DQN:
 
             done = False
             while not done:
-                if np.random.random() > self.epsilon:
-                    action = np.argmax(self.agent.get_qs(current_state))
+                if train:
+                    if np.random.random() > self.epsilon:
+                        action = np.argmax(self.agent.get_qs(current_state))
+                    else:
+                        action = np.random.randint(0, self.agent.action_space)
                 else:
-                    action = np.random.randint(0, self.agent.action_space)
+                    action = np.argmax(self.agent.get_qs(current_state))
 
                 new_state, reward, done = self.env.step(action)
 
@@ -89,38 +80,38 @@ class DQN:
                 if self.render_scene:
                     self.env.render()
 
-                self.agent.update_replay_memory(
-                    (current_state, action, reward, new_state, done)
-                )
+                if train:
+                    self.agent.update_replay_memory(
+                        (current_state, action, reward, new_state, done)
+                    )
 
-                self.agent.train(done, step)
+                    self.agent.train(done, step)
+
+                    if (
+                            (not episode % self.aggregate_stats_every
+                             or episode == 1)
+                            and show_metrics
+                    ):
+                        self.agent.get_plot()
+
+                    if self.epsilon > self.min_epsilon:
+                        self.epsilon *= self.epsilon_decay
+                        self.epsilon = max(self.min_epsilon, self.epsilon)
+
+                    if episode % 100 == 0:
+                        string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
+                        self.agent.model.save(f"models/{self.model_name}__{episode}ep - {string_date}.model")
+
+                    if self.update_episodes is not None:
+                        self.update_episodes(episode, self.episodes)
+
+                    step += 1
 
                 current_state = new_state
-                step += 1
 
                 done = done or (step >= self.max_steps_per_episode)
 
 
-            # if (
-            #         (not episode % self.aggregate_stats_every
-            #          or episode == 1)
-            #         and show_metrics
-            # ):
-            #     self.agent.get_plot()
-
-            if (show_metrics):
-                self.agent.get_plot()
-
-            if self.epsilon > self.min_epsilon:
-                self.epsilon *= self.epsilon_decay
-                self.epsilon = max(self.min_epsilon, self.epsilon)
-
-            if episode % 100 == 0:
-                string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
-                self.agent.model.save(f"models/{self.model_name}__{episode}ep - {string_date}.model")
-
-            if self.update_episodes is not None:
-                self.update_episodes(episode, self.episodes)
 
         string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
 
@@ -128,7 +119,7 @@ class DQN:
         self.agent.model.save(filepath)
         print('Training finish! - model saved in: ', filepath)
 
-        with open('models/{self.model_name}__{self.episodes}ep - {string_date}__training_history.pickle', 'wb') as f:
+        with open(f'models/{self.model_name}__{self.episodes}ep - {string_date}__training_history.pickle', 'wb') as f:
             pickle.dump(self.agent.history, f)
 
         if end_of_train_screen is not None:
