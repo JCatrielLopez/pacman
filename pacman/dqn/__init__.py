@@ -110,12 +110,11 @@ def end_of_train_screen(filepath):
 
 
 def autoplay_train():
-
     global show_metrics_train
     global episodes_train
 
     network = DQN(render=False, episodes=episodes_train, model_name="Pacman", model_path=None, update_episodes=update_episodes)
-    network.run(show_metrics=show_metrics_train, end_of_train_screen=end_of_train_screen)
+    network.run(in_training=True, show_metrics=show_metrics_train, end_of_train_screen=end_of_train_screen)
 
 
 def autoplay_test():
@@ -123,7 +122,7 @@ def autoplay_test():
     global model_path_test
 
     network = DQN(render=True, episodes=episodes_test, model_name="Pacman", model_path=model_path_test)
-    network.run(show_metrics=False)
+    network.run(in_training=False, show_metrics=False)
 
 
 def bg_fun():

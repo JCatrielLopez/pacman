@@ -324,7 +324,7 @@ class GameScene:
         if self.state_manager.frightened_timer is not None:
             if not self.state_manager.frightened_timer.paused:
                 self.state_manager.frightened_timer.pause()
-                self.ft_paused = True
+                self.ft_paused = True  # Me marca si fue pausado por este metodo o si fue pausado de causas naturales.
         if self.state_manager.dual_timer is not None:
             if not self.state_manager.dual_timer.paused:
                 self.state_manager.dual_timer.pause()

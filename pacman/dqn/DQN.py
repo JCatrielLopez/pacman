@@ -47,7 +47,7 @@ class DQN:
         self.agent = DQNAgent(model_path)
         self.env = GameEnv()
 
-    def run(self, train, show_metrics=False, end_of_train_screen=None):
+    def run(self, in_training, show_metrics=False, end_of_train_screen=None):
 
         plt.ion()
         plt.show()
@@ -65,7 +65,7 @@ class DQN:
 
             done = False
             while not done:
-                if train:
+                if in_training:
                     if np.random.random() > self.epsilon:
                         action = np.argmax(self.agent.get_qs(current_state))
                     else:
@@ -73,14 +73,14 @@ class DQN:
                 else:
                     action = np.argmax(self.agent.get_qs(current_state))
 
-                new_state, reward, done = self.env.step(action)
+                new_state, reward, done = self.env.step(action, in_training)
 
                 episode_reward += reward
 
                 if self.render_scene:
                     self.env.render()
 
-                if train:
+                if in_training:
                     self.agent.update_replay_memory(
                         (current_state, action, reward, new_state, done)
                     )
@@ -111,16 +111,16 @@ class DQN:
 
                 done = done or (step >= self.max_steps_per_episode)
 
+        if in_training:
+            string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
 
+            filepath = f"models/{self.model_name}__{self.episodes}ep - {string_date}.model"
+            self.agent.model.save(filepath)
+            print('Training finish! - model saved in: ', filepath)
 
-        string_date = str(datetime.datetime.now().strftime("%m-%d-%Y - %H:%M"))
-
-        filepath = f"models/{self.model_name}__{self.episodes}ep - {string_date}.model"
-        self.agent.model.save(filepath)
-        print('Training finish! - model saved in: ', filepath)
-
-        with open(f'models/{self.model_name}__{self.episodes}ep - {string_date}__training_history.pickle', 'wb') as f:
-            pickle.dump(self.agent.history, f)
+            with open(f'models/{self.model_name}__{self.episodes}ep - {string_date}__training_history.pickle',
+                      'wb') as f:
+                pickle.dump(self.agent.history, f)
 
         if end_of_train_screen is not None:
             end_of_train_screen(filepath)

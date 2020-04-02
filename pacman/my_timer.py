@@ -14,6 +14,9 @@ class ClockTimer(threading.Thread):
         self.last_tick = None
         self.alive = True
 
+        self.paused_time = 0
+        self.resumed_time = 0
+
     def run(self):
         self.last_tick = time.perf_counter()
         while self.alive:
@@ -35,10 +38,10 @@ class ClockTimer(threading.Thread):
     def pause(self, update_timeout=True):
         if not self.paused:
             self.paused = True
+            self.paused_time = time.perf_counter()
 
             if update_timeout:
-                self.timeout = self.timeout - (int(time.perf_counter() - self.last_tick))
-
+                self.timeout = self.timeout - (int(self.paused_time - self.last_tick))
             self.lock.acquire()
 
     def remaining_time(self):
@@ -54,6 +57,8 @@ class ClockTimer(threading.Thread):
             self.last_tick = time.perf_counter()
             self.lock.notify()
             self.lock.release()
+
+            self.resumed_time = time.perf_counter()
         except RuntimeError as e:
             print(e)
 
